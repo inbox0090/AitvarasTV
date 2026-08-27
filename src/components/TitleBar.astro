@@ -1,0 +1,206 @@
+---
+// Custom window title bar.
+//
+// Renders only on Tauri desktop builds
+//
+// Close routes through the same `CloseRequested` path as the native X,
+// so the close-to-tray behaviour in `src-tauri/src/tray.rs` still applies
+// (window hides; Quit from the tray exits the app).
+---
+
+<div
+	id="xt-titlebar"
+	class="group hidden [html[data-tauri-desktop]_&]:flex fixed top-0 inset-x-0 items-center h-9 bg-bg border-b border-line select-none z-[10002]"
+	data-tauri-drag-region
+	aria-label="Title bar">
+	<div
+		class="flex items-center gap-2 px-3 text-fg-2 text-xs font-medium leading-none pointer-events-none"
+		data-tauri-drag-region>
+		<!-- <svg
+			class="size-4.5 text-accent"
+			xmlns="http://www.w3.org/2000/svg"
+			viewBox="0 0 24 24"
+			aria-hidden="true"
+			data-tauri-drag-region>
+			<path
+				d="M18.1777 8C23.2737 8 23.2737 16 18.1777 16C13.0827 16 11.0447 8 5.43875 8C0.85375 8 0.85375 16 5.43875 16C11.0447 16 13.0828 8 18.1788 8H18.1777Z"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"></path>
+		</svg> -->
+		<span data-tauri-drag-region>Extreme Infini<span class="text-accent">TV</span></span>
+	</div>
+
+	<div class="flex-1 min-w-0 h-full" data-tauri-drag-region></div>
+
+	<div class="flex items-stretch h-full relative z-10004">
+		<button
+			type="button"
+			class="inline-flex items-center justify-center w-11.5 h-full bg-transparent border-0 text-fg-2 cursor-pointer transition-colors duration-100 hover:bg-surface-2 hover:text-fg focus-visible:outline focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
+			data-action="minimize"
+			aria-label="Minimize">
+			<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+				<path d="M1 6 L11 6" stroke="currentColor" stroke-width="1.4"
+				></path>
+			</svg>
+		</button>
+		<button
+			type="button"
+			class="inline-flex items-center justify-center w-11.5 h-full bg-transparent border-0 text-fg-2 cursor-pointer transition-colors duration-100 hover:bg-surface-2 hover:text-fg focus-visible:outline focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
+			data-action="maximize"
+			aria-label="Maximize">
+			<svg
+				class="hidden group-data-maximized:block"
+				width="12"
+				height="12"
+				viewBox="0 0 12 12"
+				aria-hidden="true">
+				<rect
+					x="2.5"
+					y="4"
+					width="6"
+					height="6"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.4"></rect>
+				<path
+					d="M4 4 V2.5 H9.5 V8 H8"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.4"></path>
+			</svg>
+			<svg
+				class="block group-data-maximized:hidden"
+				width="12"
+				height="12"
+				viewBox="0 0 12 12"
+				aria-hidden="true">
+				<rect
+					x="1.5"
+					y="1.5"
+					width="9"
+					height="9"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="1.4"></rect>
+			</svg>
+		</button>
+		<button
+			type="button"
+			class="inline-flex items-center justify-center w-11.5 h-full bg-transparent border-0 text-fg-2 cursor-pointer transition-colors duration-100 hover:bg-bad hover:text-white focus-visible:outline focus-visible:outline-accent focus-visible:outline-offset-[-3px]"
+			data-action="close"
+			aria-label="Close">
+			<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+				<path
+					d="M2 2 L10 10 M10 2 L2 10"
+					stroke="currentColor"
+					stroke-width="1.4"
+					stroke-linecap="round"></path>
+			</svg>
+		</button>
+	</div>
+</div>
+
+<script>
+	const isTauri =
+		typeof window !== "undefined" &&
+		(!!(window as any).__TAURI_INTERNALS__ || !!(window as any).__TAURI__);
+	const isAndroid =
+		typeof navigator !== "undefined" &&
+		/Android/i.test(navigator.userAgent || "");
+
+	if (isTauri && !isAndroid) {
+		const titlebar = document.getElementById("xt-titlebar");
+		if (titlebar) {
+			const maxBtn = titlebar.querySelector<HTMLButtonElement>(
+				'[data-action="maximize"]',
+			);
+			(async () => {
+				try {
+					const mod = await import("@tauri-apps/api/window");
+					const win = mod.getCurrentWindow();
+
+					const syncMaximizeState = async () => {
+						try {
+							const maximized = await win.isMaximized();
+							titlebar.toggleAttribute(
+								"data-maximized",
+								maximized,
+							);
+							if (maxBtn) {
+								maxBtn.setAttribute(
+									"aria-label",
+									maximized ? "Restore" : "Maximize",
+								);
+							}
+						} catch {}
+					};
+					const syncFullscreenState = async () => {
+						try {
+							const fs = await win.isFullscreen();
+							document.documentElement.toggleAttribute(
+								"data-fullscreen",
+								fs,
+							);
+						} catch {}
+					};
+					syncMaximizeState();
+					syncFullscreenState();
+					win.onResized(() => {
+						syncMaximizeState();
+						syncFullscreenState();
+					});
+
+					titlebar.addEventListener("click", async (event) => {
+						const btn = (
+							event.target as HTMLElement
+						).closest<HTMLButtonElement>("[data-action]");
+						if (!btn) return;
+						const action = btn.dataset.action;
+						try {
+							if (action === "minimize") await win.minimize();
+							else if (action === "maximize") {
+								await win.toggleMaximize();
+								syncMaximizeState();
+							} else if (action === "close") await win.close();
+						} catch (err) {
+							console.warn(
+								"[xt:titlebar] action failed:",
+								action,
+								err,
+							);
+						}
+					});
+
+					// Double-click on the drag region toggles maximize (Windows convention).
+					titlebar.addEventListener("dblclick", async (event) => {
+						const target = event.target as HTMLElement;
+						if (target.closest("[data-action]")) return;
+						try {
+							await win.toggleMaximize();
+							syncMaximizeState();
+						} catch {}
+					});
+				} catch (err) {
+					console.warn(
+						"[xt:titlebar] window API import failed:",
+						err,
+					);
+				}
+			})();
+		}
+	}
+</script>
+
+<style is:global>
+	[data-tauri-drag-region] {
+		-webkit-app-region: drag;
+		app-region: drag;
+	}
+	#xt-titlebar button {
+		-webkit-app-region: no-drag;
+		app-region: no-drag;
+	}
+</style>

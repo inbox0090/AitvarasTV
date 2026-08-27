@@ -1,0 +1,142 @@
+---
+import Icon from "./Icon.astro"
+
+interface SidebarLink {
+  href: string
+  label: string
+  external?: boolean
+}
+
+interface SidebarGroup {
+  title: string
+  links: SidebarLink[]
+}
+
+interface Heading {
+  depth: number
+  slug: string
+  text: string
+}
+
+interface Props {
+  groups: SidebarGroup[]
+  currentPath: string
+  pageHeadings?: Heading[]
+}
+
+const { groups, currentPath, pageHeadings = [] } = Astro.props
+
+function isCurrent(href: string) {
+  const normalize = (path: string) => path.replace(/\/+$/, "") || "/"
+  return normalize(href) === normalize(currentPath)
+}
+---
+
+<aside
+  id="sidebar"
+  aria-label="Documentation"
+  class="docs-sidebar fixed inset-y-0 right-0 z-40 w-[min(280px,80vw)] translate-x-full overflow-y-auto border-l border-line bg-bg p-4 pb-6 shadow-(--shadow-drawer) transition-transform duration-220 ease-(--ease-out-quart) md:sticky md:inset-y-auto md:left-0 md:right-auto md:top-[calc(var(--nav-h)+1rem)] md:z-0 md:max-h-[calc(100vh-var(--nav-h)-2rem)] md:w-(--sidebar-w) md:translate-x-0 md:self-start md:border-0 md:bg-transparent md:p-0 md:pr-2 md:shadow-none"
+>
+  <button
+    type="button"
+    aria-label="Close menu"
+    class="mb-4 ml-auto inline-grid h-10 w-10 cursor-pointer place-items-center rounded-md border border-transparent bg-transparent text-fg-3 transition-colors duration-150 hover:bg-surface-2 hover:text-fg md:hidden"
+    data-menu-close
+  >
+    <Icon name="close" class="h-4 w-4" />
+  </button>
+
+  {groups.map((group) => (
+    <div class="mb-6">
+      <p class="m-0 mb-1.5 px-3 text-[0.7rem] font-medium uppercase tracking-[0.07em] text-fg-3">
+        {group.title}
+      </p>
+      <ul class="m-0 flex list-none flex-col p-0">
+        {group.links.map((link) => {
+          const active = isCurrent(link.href)
+          return (
+            <li>
+              <a
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                {...(link.external ? { rel: "noopener", target: "_blank" } : {})}
+                class="sidebar-link relative block rounded-md px-3 py-[0.35rem] pointer-coarse:py-2.5 text-[0.9rem] text-fg-2 no-underline transition-[background-color,color] duration-120 ease-(--ease-out-quart) hover:bg-surface-2 hover:text-fg hover:no-underline"
+              >
+                {link.label}
+                {link.external && (
+                  <Icon name="external" class="ml-1 inline-block size-2.5 align-[-0.05em] opacity-40" />
+                )}
+                {link.external && <span class="sr-only"> (opens in new tab)</span>}
+              </a>
+              {active && pageHeadings.length > 0 && (
+                <ul class="sidebar-subnav mt-0.5 ml-3 flex list-none flex-col border-l border-line-soft p-0" data-page-toc>
+                  {pageHeadings.map((heading) => (
+                    <li>
+                      <a
+                        href={`#${heading.slug}`}
+                        data-toc-slug={heading.slug}
+                        class="subnav-link relative block py-1 pl-3 pr-2 pointer-coarse:py-3 text-[0.82rem] text-fg-3 no-underline transition-colors duration-120 ease-(--ease-out-quart) hover:text-fg hover:no-underline"
+                      >
+                        {heading.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  ))}
+</aside>
+
+<div
+  class="sidebar-scrim pointer-events-none fixed inset-0 z-30 bg-black/30 opacity-0 transition-opacity duration-200 md:hidden"
+  data-scrim
+  aria-hidden="true"
+></div>
+
+<style>
+  .docs-sidebar[data-open="true"] {
+    translate: 0 0;
+  }
+
+  .sidebar-link[aria-current="page"] {
+    color: var(--color-fg);
+    font-weight: 500;
+    background: var(--color-surface-2);
+  }
+
+  .sidebar-link[aria-current="page"]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 25%;
+    bottom: 25%;
+    width: 2px;
+    border-radius: 2px;
+    background: var(--color-accent);
+    view-transition-name: sidebar-active;
+  }
+
+  .subnav-link[aria-current="true"] {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  .subnav-link[aria-current="true"]::before {
+    content: "";
+    position: absolute;
+    left: -1px;
+    top: 30%;
+    bottom: 30%;
+    width: 2px;
+    background: var(--color-accent);
+  }
+
+  .sidebar-scrim[data-open="true"] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+</style>

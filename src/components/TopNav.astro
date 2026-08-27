@@ -1,0 +1,90 @@
+---
+import { IconSearch } from "@tabler/icons-svelte"
+import AccountMenu from "@/components/AccountMenu.astro"
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/"
+const primaryItems = [
+  { href: "/",          key: "nav.home",      label: "Home",      match: (value: string) => value === "/" },
+  { href: "/movies",    key: "nav.movies",    label: "Movies",    match: (value: string) => value === "/movies" || value.startsWith("/movies/") },
+  { href: "/livetv",    key: "nav.livetv",    label: "Live TV",   match: (value: string) => value === "/livetv" || value.startsWith("/livetv/") },
+  { href: "/series",    key: "nav.series",    label: "Series",    match: (value: string) => value === "/series" || value.startsWith("/series/") },
+  { href: "/favorites", key: "nav.favorites", label: "Favorites", match: (value: string) => value === "/favorites" || value.startsWith("/favorites/") },
+]
+---
+
+<!--
+  Global header after sidebar removal. The same route hrefs and active-state
+  matchers are used here and in AccountMenu; no navigation handler or API is
+  replaced. AccountMenu remains the right-side home for full navigation and
+  user settings.
+-->
+<header id="cinema-top-nav" class="cinema-top-nav">
+  <div class="cinema-top-nav__inner">
+    <a
+      href="/"
+      class="cinema-top-nav__brand"
+      aria-label="AitvarasTV - Home"
+      data-i18n-attr="aria-label:sidebar.brandHome">
+      <span class="cinema-top-nav__mark" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </span>
+      <span class="cinema-top-nav__wordmark">
+        <strong>AitvarasTV</strong>
+      </span>
+    </a>
+
+    <!-- Primary links are direct anchors, preserving existing app routes. -->
+    <nav class="cinema-top-nav__links" aria-label="Primary navigation">
+      {primaryItems.map(({ href, key, label, match }) => (
+        <a
+          href={href}
+          aria-current={match(path) ? "page" : undefined}
+          data-i18n={key}>
+          {label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="cinema-top-nav__actions">
+      <!-- Existing search route is preserved; no query or search handler is replaced. -->
+      <a
+        href="/search"
+        class="cinema-top-nav__search"
+        aria-label="Search"
+        data-i18n-attr="aria-label:nav.search">
+        <IconSearch aria-hidden="true" stroke={2} />
+        <span data-i18n="nav.search">Search</span>
+        <kbd aria-hidden="true">Ctrl K</kbd>
+      </a>
+
+      <div class="guest-auth-actions" data-guest-auth-actions>
+        <a href="/auth" class="guest-auth-actions__signin">Sign in</a>
+        <a href="/auth?mode=register" class="guest-auth-actions__register">Register</a>
+      </div>
+      <div data-member-account hidden>
+        <AccountMenu />
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const guestActions = document.querySelector("[data-guest-auth-actions]")
+  const memberAccount = document.querySelector("[data-member-account]")
+  fetch("/api/auth/me", { credentials: "same-origin", headers: { Accept: "application/json" }, cache: "no-store" })
+    .then((response) => response.ok ? response.json() : null)
+    .then((access) => {
+      const signedIn = access?.authenticated === true && (access.role === "client" || access.role === "admin")
+      if (signedIn) {
+        guestActions?.setAttribute("hidden", "")
+        memberAccount?.removeAttribute("hidden")
+      } else {
+        guestActions?.removeAttribute("hidden")
+        memberAccount?.setAttribute("hidden", "")
+      }
+    })
+    .catch(() => {
+      guestActions?.removeAttribute("hidden")
+      memberAccount?.setAttribute("hidden", "")
+    })
+</script>

@@ -1,0 +1,287 @@
+---
+import {
+  IconBookmark,
+  IconCalendarTime,
+  IconCheck,
+  IconChevronDown,
+  IconDeviceTv,
+  IconDownload,
+  IconHome,
+  IconLayoutGrid,
+  IconMovie,
+  IconPlus,
+  IconSettings,
+  IconSparkles,
+  IconStack2,
+  IconStar,
+  IconUserCircle,
+} from "@tabler/icons-svelte"
+import PlaylistSwitcher from "@/components/PlaylistSwitcher.svelte"
+import LocalePicker from "@/components/LocalePicker.svelte"
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/"
+const items = [
+  { href: "/",               key: "nav.home",          label: "Home",           Icon: IconHome,         match: (p: string) => p === "/" },
+  { href: "/livetv",         key: "nav.livetv",        label: "Live TV",        Icon: IconDeviceTv,     match: (p: string) => p === "/livetv" || p.startsWith("/livetv/") },
+  { href: "/movies",         key: "nav.movies",        label: "Movies",         Icon: IconMovie,        match: (p: string) => p === "/movies" || p.startsWith("/movies/") },
+  { href: "/series",         key: "nav.series",        label: "Series",         Icon: IconStack2,       match: (p: string) => p === "/series" || p.startsWith("/series/") },
+  { href: "/favorites",      key: "nav.favorites",     label: "Favorites",      Icon: IconStar,         match: (p: string) => p === "/favorites" || p.startsWith("/favorites/") },
+  { href: "/watchlist",      key: "nav.watchlist",     label: "Watchlist",      Icon: IconBookmark,     match: (p: string) => p === "/watchlist" || p.startsWith("/watchlist/") },
+  { href: "/recently-added", key: "nav.recentlyAdded", label: "Recently added", Icon: IconSparkles,     match: (p: string) => p === "/recently-added" || p.startsWith("/recently-added/") },
+  { href: "/epg",            key: "nav.epg",           label: "EPG",            Icon: IconCalendarTime, match: (p: string) => p === "/epg" || p.startsWith("/epg/") },
+  { href: "/downloads",      key: "nav.downloads",     label: "Downloads",      Icon: IconDownload,     match: (p: string) => p === "/downloads" || p.startsWith("/downloads/") },
+]
+const settingsActive = path === "/settings" || path.startsWith("/settings/")
+---
+
+<!--
+  Navigation-only refactor. Every href below is copied from the prior sidebar.
+  PlaylistSwitcher, data-account-expiration hooks, and downloads status hooks
+  remain attached to their existing client-side logic.
+-->
+<div class="account-menu" data-account-menu>
+  <button
+    id="account-menu-trigger"
+    type="button"
+    aria-haspopup="menu"
+    aria-controls="account-menu-panel"
+    aria-expanded="false"
+    class="account-menu__trigger">
+    <span class="account-menu__avatar"><IconUserCircle aria-hidden="true" stroke={1.8} /></span>
+    <span class="account-menu__label">Account</span>
+    <IconChevronDown aria-hidden="true" class="account-menu__chevron" stroke={1.8} />
+  </button>
+
+  <div
+    id="account-menu-panel"
+    role="menu"
+    aria-labelledby="account-menu-trigger"
+    aria-hidden="true"
+    inert
+    class="account-menu__panel">
+    <div class="account-menu__head">
+      <div>
+        <p class="account-menu__eyebrow" data-auth-user-label>Your library</p>
+        <p class="account-menu__title" data-auth-plan-label>Navigation & preferences</p>
+      </div>
+      <a href="/settings" data-settings-master-link class="account-menu__settings-shortcut" aria-label="Settings" data-i18n-attr="aria-label:nav.settings">
+        <IconSettings aria-hidden="true" stroke={1.8} />
+      </a>
+    </div>
+
+    <!-- Existing playlist picker and its events are preserved. -->
+    <div class="account-menu__playlist">
+      <PlaylistSwitcher client:load />
+    </div>
+
+    <a
+      href="/settings"
+      data-account-expiration="banner"
+      hidden
+      aria-label="Account expiration warning"
+      title="Account expiration"
+      data-i18n-attr="aria-label:sidebar.expirationAria;title:sidebar.expirationTitle"
+      class="account-menu__expiration">
+    </a>
+    <div data-account-expiration class="account-menu__expiration-copy"></div>
+
+    <div class="account-menu__section">
+      <p class="account-menu__section-label">Browse</p>
+      <div class="account-menu__links">
+        {items.map(({ href, key, label, Icon, match }) => {
+          const active = match(path)
+          const downloads = href === "/downloads"
+          return (
+            <a
+              href={href}
+              id={downloads ? "account-menu-downloads" : undefined}
+              aria-current={active ? "page" : undefined}
+              data-i18n-attr={`aria-label:${key}`}
+              class:list={["account-menu__link", active && "is-active"]}>
+              <span class="account-menu__link-icon">
+                <Icon aria-hidden="true" stroke={active ? 2 : 1.75} />
+                {downloads && <span id="account-menu-downloads-badge" aria-hidden="true" hidden>0</span>}
+              </span>
+              <span data-i18n={key}>{label}</span>
+              {downloads && <span id="account-menu-downloads-sub" class="account-menu__link-sub"></span>}
+            </a>
+          )
+        })}
+      </div>
+    </div>
+
+    <div class="account-menu__section account-menu__section--preferences">
+      <p class="account-menu__section-label">Preferences</p>
+      <a href="/account" class="account-menu__link account-menu__link--account">
+        <span class="account-menu__link-icon"><IconUserCircle aria-hidden="true" stroke={1.75} /></span>
+        <span>Account settings</span>
+      </a>
+      <a href="/settings" data-settings-master-link aria-current={settingsActive ? "page" : undefined} data-i18n-attr="aria-label:nav.settings" class:list={["account-menu__link", settingsActive && "is-active"]}>
+        <span class="account-menu__link-icon"><IconSettings aria-hidden="true" stroke={settingsActive ? 2 : 1.75} /></span>
+        <span data-i18n="nav.settings">Settings</span>
+      </a>
+      <label class="account-menu__locale">
+        <span class="account-menu__link-icon"><IconLayoutGrid aria-hidden="true" stroke={1.75} /></span>
+        <span class="account-menu__locale-label">Language</span>
+        <!-- Existing LocalePicker component and locale events are preserved. -->
+        <LocalePicker client:idle />
+      </label>
+    </div>
+
+    <div class="account-menu__actions">
+      <button type="button" class="account-menu__action account-menu__action--quiet" data-client-signout hidden>
+        <IconUserCircle aria-hidden="true" stroke={2} />
+        <span>Sign out</span>
+      </button>
+      <a href="/login" class="account-menu__action account-menu__action--quiet">
+        <IconPlus aria-hidden="true" stroke={2} />
+        <span data-i18n="playlist.addCta">Add a playlist</span>
+      </a>
+      <a href="/login?demo=1" class="account-menu__action account-menu__action--primary">
+        <IconSparkles aria-hidden="true" stroke={2} />
+        <span data-i18n="playlist.demoCta">Try a demo playlist</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  import {
+    listDownloads,
+    DOWNLOADS_LIST_EVENT,
+    DOWNLOAD_PROGRESS_EVENT,
+  } from "@/scripts/lib/downloads.js"
+  import { toastSuccess, toastError } from "@/scripts/lib/toast.js"
+  import { t } from "@/scripts/lib/i18n.js"
+  import { loadSettingsPolicy } from "@/scripts/lib/settings-policy.js"
+  import { loadViewerAccess } from "@/scripts/lib/auth-access.js"
+
+  // Preserved from the former sidebar: warming remains triggered after a
+  // playlist switch, independent of where the navigation is rendered.
+  function onLoginPage() {
+    return location.pathname === "/login" || location.pathname.startsWith("/login/")
+  }
+  function maybeWarmup() {
+    if (onLoginPage()) return
+    import("@/scripts/lib/catalog.js").then((m) => m.warmupActive()).catch(() => {})
+  }
+  document.addEventListener("xt:active-changed", maybeWarmup)
+  if (typeof window !== "undefined") {
+    window.requestIdleCallback
+      ? window.requestIdleCallback(maybeWarmup, { timeout: 2000 })
+      : setTimeout(maybeWarmup, 500)
+  }
+
+  // Same downloads-state listeners formerly attached to the sidebar badges.
+  const downloadsBadge = document.getElementById("account-menu-downloads-badge")
+  const downloadsSub = document.getElementById("account-menu-downloads-sub")
+  const ACTIVE = new Set(["downloading", "queued", "stalled"])
+  function setBadge(el, count) {
+    if (!el) return
+    if (count === 0) {
+      el.setAttribute("hidden", "")
+      el.textContent = ""
+    } else {
+      el.removeAttribute("hidden")
+      el.textContent = count > 9 ? "9+" : String(count)
+    }
+  }
+  function updateDownloads() {
+    const active = listDownloads().filter((item) => ACTIVE.has(item.status))
+    const downloading = active.filter((item) => item.status === "downloading")
+    const total = downloading.reduce((sum, item) => sum + (item.bytesTotal > 0 ? item.bytesTotal : 0), 0)
+    const done = downloading.reduce((sum, item) => sum + (item.bytesDone || 0), 0)
+    setBadge(downloadsBadge, active.length)
+    if (downloadsSub) {
+      downloadsSub.textContent = total > 0 && downloading.length > 0
+        ? `${Math.max(0, Math.min(100, (done / total) * 100)).toFixed(0)}%`
+        : active.length ? String(active.length) : ""
+    }
+  }
+  // Preserved transition notifications from the former sidebar component.
+  // They are kept here because this header is now present on every route.
+  const lastStatusById = new Map()
+  for (const item of listDownloads()) lastStatusById.set(item.id, item.status)
+  function announceDownloadTransitions() {
+    const list = listDownloads()
+    const seen = new Set()
+    for (const item of list) {
+      seen.add(item.id)
+      const previous = lastStatusById.get(item.id)
+      lastStatusById.set(item.id, item.status)
+      if (previous === item.status) continue
+      if (item.status === "done" && previous !== "done") {
+        toastSuccess(t("downloads.toast.complete"), {
+          description: item.title || item.filename || "",
+        })
+      } else if (item.status === "error" && previous !== "error") {
+        toastError(t("downloads.toast.failed"), {
+          description: [item.title || item.filename || "", item.error || ""].filter(Boolean).join("\n"),
+          duration: 6000,
+        })
+      }
+    }
+    for (const id of lastStatusById.keys()) {
+      if (!seen.has(id)) lastStatusById.delete(id)
+    }
+    updateDownloads()
+  }
+  document.addEventListener(DOWNLOADS_LIST_EVENT, announceDownloadTransitions)
+  document.addEventListener(DOWNLOAD_PROGRESS_EVENT, updateDownloads)
+  updateDownloads()
+
+  const authUserLabel = document.querySelector("[data-auth-user-label]")
+  const authPlanLabel = document.querySelector("[data-auth-plan-label]")
+  const signout = document.querySelector("[data-client-signout]")
+  loadViewerAccess().then((access) => {
+    if (access.role === "admin") {
+      if (authUserLabel) authUserLabel.textContent = "Admin preview"
+      if (authPlanLabel) authPlanLabel.textContent = "Full channel access"
+      return
+    }
+    if (access.role !== "client") return
+    if (authUserLabel) authUserLabel.textContent = access.user?.displayName || access.user?.email || "Member"
+    if (authPlanLabel) authPlanLabel.textContent = access.plan?.name ? `Plan: ${access.plan.name}` : "Choose a plan"
+    signout?.removeAttribute("hidden")
+  })
+  signout?.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" }).catch(() => {})
+    window.location.assign("/auth")
+  })
+
+  // Admin can hide the public Settings entry without changing any existing
+  // navigation routes or client-side settings handlers.
+  loadSettingsPolicy().then((policy) => {
+    if (policy.enabled !== false) return
+    document.querySelectorAll("[data-settings-master-link]").forEach((link) => {
+      link.setAttribute("hidden", "")
+      link.setAttribute("aria-hidden", "true")
+    })
+  })
+
+  // Account dropdown interaction: no links or handlers are replaced.
+  const trigger = document.getElementById("account-menu-trigger")
+  const panel = document.getElementById("account-menu-panel")
+  const wrap = trigger?.closest("[data-account-menu]")
+  function setOpen(open) {
+    if (!trigger || !panel) return
+    trigger.setAttribute("aria-expanded", open ? "true" : "false")
+    panel.setAttribute("aria-hidden", open ? "false" : "true")
+    if (open) panel.removeAttribute("inert")
+    else panel.setAttribute("inert", "")
+  }
+  trigger?.addEventListener("click", (event) => {
+    event.stopPropagation()
+    setOpen(trigger.getAttribute("aria-expanded") !== "true")
+  })
+  document.addEventListener("click", (event) => {
+    if (trigger?.getAttribute("aria-expanded") !== "true") return
+    if (wrap && !wrap.contains(/** @type {Node} */ (event.target))) setOpen(false)
+  })
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || trigger?.getAttribute("aria-expanded") !== "true") return
+    event.stopPropagation()
+    setOpen(false)
+    trigger.focus()
+  })
+</script>

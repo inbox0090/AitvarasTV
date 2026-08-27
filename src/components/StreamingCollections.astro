@@ -1,0 +1,91 @@
+---
+import {
+  IconDeviceTv,
+  IconMovie,
+  IconStack2,
+  IconCalendarEvent,
+  IconDownload,
+  IconHeart,
+} from "@tabler/icons-svelte"
+
+const collections = [
+  {
+    href: "/livetv",
+    label: "Live TV",
+    eyebrow: "Watch now",
+    copy: "Channels and the programme guide in one place.",
+    tone: "coral",
+    icon: IconDeviceTv,
+  },
+  {
+    href: "/movies",
+    label: "Movies",
+    eyebrow: "Cinema shelf",
+    copy: "Browse your provider's film catalogue.",
+    tone: "violet",
+    icon: IconMovie,
+  },
+  {
+    href: "/series",
+    label: "Series",
+    eyebrow: "Binge next",
+    copy: "Find shows, seasons and episodes.",
+    tone: "blue",
+    icon: IconStack2,
+  },
+  {
+    href: "/epg",
+    label: "TV Guide",
+    eyebrow: "Plan your night",
+    copy: "See what's on now and what comes next.",
+    tone: "amber",
+    icon: IconCalendarEvent,
+  },
+  {
+    href: "/downloads",
+    label: "Downloads",
+    eyebrow: "Take it with you",
+    copy: "Open your saved offline viewing queue.",
+    tone: "mint",
+    icon: IconDownload,
+  },
+  {
+    href: "/favorites",
+    label: "My List",
+    eyebrow: "Your picks",
+    copy: "Return to the titles you want to keep close.",
+    tone: "pink",
+    icon: IconHeart,
+  },
+]
+---
+
+<!--
+  Original content-discovery module inspired by large streaming homepages.
+  Every card is a normal anchor to an existing route; no API, state, or
+  click-handler contract is changed here.
+-->
+<section class="streaming-collections" aria-labelledby="streaming-collections-title">
+  <div class="streaming-collections__heading">
+    <div>
+      <p class="streaming-collections__eyebrow">Explore your library</p>
+      <h2 id="streaming-collections-title">Everything worth watching.</h2>
+    </div>
+    <span class="streaming-collections__hint">Choose a lane</span>
+  </div>
+
+  <div class="streaming-collections__grid">
+    {collections.map(({ href, label, eyebrow, copy, tone, icon: Icon }) => (
+      <a href={href} class={`streaming-collection-card streaming-collection-card--${tone}`}>
+        <span class="streaming-collection-card__glow" aria-hidden="true"></span>
+        <span class="streaming-collection-card__topline">
+          <span>{eyebrow}</span>
+          <Icon aria-hidden="true" stroke={1.7} />
+        </span>
+        <span class="streaming-collection-card__title">{label}</span>
+        <span class="streaming-collection-card__copy">{copy}</span>
+        <span class="streaming-collection-card__arrow" aria-hidden="true">↗</span>
+      </a>
+    ))}
+  </div>
+</section>

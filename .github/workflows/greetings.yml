@@ -1,0 +1,26 @@
+name: Greetings
+
+on: [pull_request_target, issues]
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+    - uses: actions/first-interaction@v1
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        issue-message: |
+          Thanks for opening your first issue in Extreme InfiniTV. A few things that help us help you faster:
+          - Include your platform (Windows / macOS / Linux / Android) and app version.
+          - If it's a playback or playlist issue, mention whether you're using Xtream credentials or a plain M3U URL.
+          - Logs from the in-app diagnostic dialog (right-click a channel -> "Test stream") are very useful for stream problems.
+          We'll take a look as soon as we can.
+        pr-message: |
+          Thanks for opening your first pull request. A quick checklist before review:
+          - `pnpm lint` and `pnpm test` pass locally.
+          - If you touched user-facing strings, only `src/i18n/en.json` needs updating - other locales fall back to English.
+          - Screenshots or a short clip help a lot for UI changes (the app targets TV / D-pad, desktop, and mobile - try to think about all three).
+          Looking forward to it.

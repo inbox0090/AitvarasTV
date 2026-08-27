@@ -1,0 +1,69 @@
+---
+import { IconCheck, IconSparkles } from "@tabler/icons-svelte"
+
+const plans = [
+  {
+    id: "basic",
+    name: "Basic",
+    description: "A focused setup for your everyday viewing.",
+    features: ["Movies and series", "Live channel support", "Personal watchlist"],
+  },
+  {
+    id: "standard",
+    name: "Standard",
+    description: "A balanced experience across your viewing devices.",
+    features: ["Everything in Basic", "Programme guide support", "Continue watching"],
+    featured: true,
+  },
+  {
+    id: "premium",
+    name: "Premium",
+    description: "A complete home-theatre workflow for your library.",
+    features: ["Everything in Standard", "Offline downloads", "Advanced playback controls"],
+  },
+]
+---
+
+<!--
+  UI-only pricing surface. This project has no built-in billing API or payment
+  endpoint, so no prices or payment URLs are fabricated. Each CTA deliberately
+  keeps the existing /login subscription-onboarding route intact. Hosting apps
+  may populate [data-plan-price] and replace [data-plan-action] links at runtime.
+-->
+<section id="subscription-plans" class="cinema-plans" aria-labelledby="plans-title" data-plans-root>
+  <header class="cinema-plans__head">
+    <p class="cinema-plans__eyebrow"><IconSparkles aria-hidden="true" /> Membership</p>
+    <h2 id="plans-title">Find your viewing rhythm.</h2>
+    <p>Connect the subscription supplied by your provider and keep your viewing experience in one place.</p>
+  </header>
+
+  <div class="cinema-plans__grid" data-plans-grid>
+    {plans.map((plan) => (
+      <article class:list={["cinema-plan", plan.featured && "cinema-plan--featured"]} data-plan={plan.id}>
+        {plan.featured && <span class="cinema-plan__badge">Most popular</span>}
+        <h3 data-plan-name>{plan.name}</h3>
+        <p class="cinema-plan__description" data-plan-description>{plan.description}</p>
+        <p class="cinema-plan__meta" data-plan-meta>Provider category · {plan.id === "premium" ? "Premium" : "General"} · {plan.id === "premium" ? 4 : plan.id === "standard" ? 2 : 1} connections · 30 days</p>
+        <p class="cinema-plan__price" data-plan-price>
+          <span data-price-value>Provider pricing</span>
+          <small data-price-period>varies by subscription</small>
+        </p>
+        <ul data-plan-features>
+          {plan.features.map((feature) => (
+            <li><IconCheck aria-hidden="true" stroke={2.2} /> <span>{feature}</span></li>
+          ))}
+        </ul>
+        <a href="/login" data-plan-action={plan.id} class:list={[plan.featured ? "btn-primary" : "btn", "cinema-plan__action"]}>
+          Choose plan
+        </a>
+      </article>
+    ))}
+  </div>
+  <p class="cinema-plans__empty" data-plans-empty hidden>No public plans are available right now.</p>
+</section>
+
+<script>
+  import { applyPublicPlans } from "@/scripts/lib/plans.js"
+
+  void applyPublicPlans()
+</script>

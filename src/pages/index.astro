@@ -1,0 +1,538 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import HubStrips from "@/components/HubStrips.svelte";
+import CuratedMovieRows from "@/components/CuratedMovieRows.svelte";
+import CinemaPlans from "@/components/CinemaPlans.astro";
+import {
+	IconDeviceTv,
+	IconMovie,
+	IconStack2,
+	IconPlayerPlay,
+	IconInfoCircle,
+} from "@tabler/icons-svelte";
+---
+
+<Layout>
+
+		<main
+		class="movie-first-home flex-1 w-full mx-auto px-4 py-6 md:px-6 lg:px-8 max-w-480 flex flex-col gap-6">
+
+		<a
+			id="hub-expiration-banner"
+			href="/settings"
+			data-account-expiration="hub-banner"
+			hidden
+			class="rounded-xl px-4 py-3 text-sm font-medium
+				border border-warn/35 bg-warn/10 text-warn
+				data-[state=critical]:border-bad/45 data-[state=critical]:bg-bad/12 data-[state=critical]:text-bad
+				data-[state=expired]:border-bad/55 data-[state=expired]:bg-bad/14 data-[state=expired]:text-bad
+				hover:border-current
+				outline-none transition-colors no-underline">
+		</a>
+
+			<!--
+				Dynamic hero shell. The script below only reads the existing cached VOD
+				catalogue and routes into the existing movie detail page; no provider,
+				player, or API logic is replaced.
+			-->
+			<section id="featured-hero" hidden class="featured-hero" aria-labelledby="featured-title">
+				<div id="featured-backdrop" class="featured-hero__backdrop" aria-hidden="true">
+					<img id="featured-backdrop-image" alt="" decoding="async" referrerpolicy="no-referrer" />
+				</div>
+					<video id="featured-trailer" class="featured-hero__trailer" muted loop playsinline preload="metadata" hidden aria-label="Featured movie trailer"></video>
+					<div class="featured-hero__veil" aria-hidden="true"></div>
+				<div class="featured-hero__content">
+					<p class="featured-hero__eyebrow">Featured selection</p>
+					<h1 id="featured-title" class="featured-hero__title"></h1>
+					<div id="featured-meta" class="featured-hero__meta" aria-label="Title information"></div>
+					<p id="featured-description" class="featured-hero__description"></p>
+					<form class="home-quick-search" action="/search" method="get" role="search">
+						<label class="sr-only" for="home-movie-search">Search movies</label>
+						<input id="home-movie-search" name="q" type="search" placeholder="Search movies, series and channels…" autocomplete="off" />
+						<button type="submit">Search</button>
+					</form>
+					<div class="featured-hero__actions">
+						<a id="featured-play" href="/movies" class="btn-primary">
+							<IconPlayerPlay aria-hidden="true" class="btn-icon" fill="currentColor" />
+							<span>Play</span>
+						</a>
+							<a id="featured-more" href="/movies" class="btn featured-hero__more">
+								<IconInfoCircle aria-hidden="true" class="btn-icon" />
+								<span>More info</span>
+							</a>
+							<button id="featured-trailer-toggle" type="button" class="btn featured-hero__trailer-toggle" hidden>
+								<span class="btn-icon" aria-hidden="true">▶</span>
+								<span>Trailer</span>
+							</button>
+					</div>
+				</div>
+			</section>
+
+			<dialog id="movie-preview-modal" class="movie-preview-modal" aria-labelledby="movie-preview-title">
+				<form method="dialog" class="movie-preview-modal__close-wrap"><button class="movie-preview-modal__close" aria-label="Close preview">×</button></form>
+				<div class="movie-preview-modal__backdrop"><img id="movie-preview-image" alt="" /></div>
+				<div class="movie-preview-modal__content">
+					<p class="featured-hero__eyebrow">Movie preview</p>
+					<h2 id="movie-preview-title"></h2>
+					<div id="movie-preview-meta" class="featured-hero__meta"></div>
+					<p id="movie-preview-description"></p>
+					<div class="movie-preview-modal__actions">
+						<a id="movie-preview-open" class="btn-primary" href="/movies">Open details</a>
+						<form method="dialog"><button class="btn">Close</button></form>
+					</div>
+				</div>
+			</dialog>
+
+			<nav
+				id="hub-tiles"
+			aria-label="Browse" data-i18n-attr="aria-label:aria.browse"
+			class="grid gap-3 sm:gap-4 shrink-0
+				grid-cols-1
+				landscape:grid-cols-[2fr_1fr] landscape:grid-rows-2
+				lg:grid-cols-[2fr_1fr] lg:grid-rows-2">
+			<a
+				href="/livetv"
+				aria-label="Watch Live TV" data-i18n-attr="aria-label:aria.watchLiveTv"
+				style="animation-delay: 50ms;"
+				class="tile-enter lg:row-span-2 landscape:row-span-2 group relative flex flex-col justify-between
+					rounded-2xl border border-line bg-surface
+					p-6 sm:p-8 lg:p-12
+					min-h-56 landscape:min-h-0 lg:min-h-0 overflow-hidden
+					transition-[transform,border-color,background-color] duration-300 ease-out
+					hover:border-accent hover:bg-surface-2
+					focus-visible:bg-surface-2
+					hover:transform-[translateY(-2px)]
+					focus-visible:transform-[translateY(-2px)]">
+				<div
+					id="livetv-tile-art"
+					class="tile-art pointer-events-none"
+					aria-hidden="true"></div>
+				<div class="relative flex items-start justify-between gap-4 z-10">
+					<IconDeviceTv
+						aria-hidden="true"
+						stroke={1}
+						class="size-12 sm:size-16 lg:size-24 text-fg-3 shrink-0 transition-colors duration-200 group-hover:text-accent group-focus-visible:text-accent"
+					/>
+					<p
+						id="hero-eyebrow"
+						class="font-sans text-eyebrow font-medium uppercase text-fg-3 text-right pt-2 tabular-nums"
+						aria-hidden="true">
+					</p>
+				</div>
+				<div class="relative mt-auto pt-6 z-10">
+					<h2
+						data-i18n="nav.livetv"
+						class="font-semibold tracking-[-0.02em] leading-[0.92] text-fg
+							group-hover:text-accent group-focus-visible:text-accent
+							transition-colors duration-200 ms-[-0.05em]"
+						style="font-size: clamp(3rem, 6vw + 1.5rem, 8.5rem);">
+						Live TV
+					</h2>
+					<p
+						id="livetv-tile-sub"
+						data-i18n="hub.tile.livetv.sub"
+						class="mt-4 sm:mt-5 text-sm sm:text-base text-fg-2 max-w-md font-sans tracking-tight truncate">
+						Channels, and what's on right now.
+					</p>
+				</div>
+			</a>
+
+			<a
+				href="/movies"
+				aria-label="Browse Movies" data-i18n-attr="aria-label:aria.browseMovies"
+				style="animation-delay: 150ms;"
+				class="tile-enter group relative overflow-hidden flex flex-col justify-between
+					rounded-2xl border border-line bg-surface
+					p-5 sm:p-6
+					min-h-28 landscape:min-h-0 lg:min-h-0
+					transition-[transform,border-color,background-color] duration-300 ease-out
+					hover:border-accent hover:bg-surface-2
+					focus-visible:bg-surface-2
+					hover:transform-[translateY(-2px)]
+					focus-visible:transform-[translateY(-2px)]">
+				<div
+					id="movies-tile-art"
+					class="tile-art pointer-events-none"
+					aria-hidden="true"></div>
+				<IconMovie
+					aria-hidden="true"
+					stroke={1.25}
+					class="relative z-10 size-9 sm:size-10 lg:size-12 text-fg-3 transition-colors duration-200 group-hover:text-accent group-focus-visible:text-accent"
+				/>
+				<div class="relative z-10 mt-auto pt-4">
+					<h2 data-i18n="nav.movies" class="text-2xl sm:text-3xl lg:text-5xl font-semibold tracking-[-0.02em] leading-[0.95]
+						text-fg group-hover:text-accent group-focus-visible:text-accent
+						transition-colors duration-200 ms-[-0.05em]">
+						Movies
+					</h2>
+					<p data-i18n="hub.tile.movies.sub" class="mt-1.5 text-sm text-fg-2">
+						Browse the library.
+					</p>
+				</div>
+			</a>
+
+			<a
+				href="/series"
+				aria-label="Browse Series" data-i18n-attr="aria-label:aria.browseSeries"
+				style="animation-delay: 250ms;"
+				class="tile-enter group relative overflow-hidden flex flex-col justify-between
+					rounded-2xl border border-line bg-surface
+					p-5 sm:p-6
+					min-h-28 landscape:min-h-0 lg:min-h-0
+					transition-[transform,border-color,background-color] duration-300 ease-out
+					hover:border-accent hover:bg-surface-2
+					focus-visible:bg-surface-2
+					hover:transform-[translateY(-2px)]
+					focus-visible:transform-[translateY(-2px)]">
+				<div
+					id="series-tile-art"
+					class="tile-art pointer-events-none"
+					aria-hidden="true"></div>
+				<IconStack2
+					aria-hidden="true"
+					stroke={1.25}
+					class="relative z-10 size-9 sm:size-10 lg:size-12 text-fg-3 transition-colors duration-200 group-hover:text-accent group-focus-visible:text-accent"
+				/>
+				<div class="relative z-10 mt-auto pt-4">
+					<h2 data-i18n="nav.series" class="text-2xl sm:text-3xl lg:text-5xl font-semibold tracking-[-0.02em] leading-[0.95]
+						text-fg group-hover:text-accent group-focus-visible:text-accent
+						transition-colors duration-200 ms-[-0.05em]">
+						Series
+					</h2>
+					<p data-i18n="hub.tile.series.sub" class="mt-1.5 text-sm text-fg-2">
+						Shows and full seasons.
+					</p>
+				</div>
+			</a>
+		</nav>
+
+					<section class="movie-home-rows" aria-labelledby="movie-home-rows-title">
+						<div class="movie-home-rows__heading">
+							<p>Discover</p>
+							<h2 id="movie-home-rows-title">Movies made for tonight.</h2>
+						</div>
+													<CuratedMovieRows client:load />
+										<HubStrips client:load />
+
+					</section>
+					<CinemaPlans />
+		</main>
+</Layout>
+
+<style>
+	@keyframes tile-enter {
+		from {
+			opacity: 0;
+			transform: translateY(12px);
+		}
+	}
+	.tile-enter {
+		animation: tile-enter 500ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+	}
+
+</style>
+
+<script>
+	import "../scripts/updater-startup.js";
+	import { log } from "@/scripts/lib/log.js";
+	import { t, LOCALE_EVENT } from "@/scripts/lib/i18n.js";
+	import { getActiveEntry, loadCreds } from "@/scripts/lib/creds.js";
+	import { getCached, hydrate as hydrateCache } from "@/scripts/lib/cache.js";
+	import { getRecents, ensureLoaded as ensurePrefsLoaded } from "@/scripts/lib/preferences.js";
+	import { getProgrammesSync, getNowNextForChannel, loadProgrammes } from "@/scripts/lib/epg-data.js";
+
+	const eyebrow = document.getElementById("hero-eyebrow");
+	let heroChannelCount = 0;
+	const setHeroChannelCount = (count) => {
+		const next = Number.isFinite(count) ? Math.max(0, count) : 0;
+		if (next === heroChannelCount) return;
+		heroChannelCount = next;
+		window.__refreshHeroEyebrow?.();
+	};
+	if (eyebrow) {
+		const greet = (hour) => {
+			if (hour < 5) return t("hub.greeting.night");
+			if (hour < 12) return t("hub.greeting.morning");
+			if (hour < 18) return t("hub.greeting.afternoon");
+			if (hour < 22) return t("hub.greeting.evening");
+			return t("hub.greeting.night");
+		};
+		const update = () => {
+			const now = new Date();
+			const time = new Intl.DateTimeFormat(undefined, {
+				hour: "numeric",
+				minute: "2-digit",
+			}).format(now);
+			const parts = [greet(now.getHours()), time];
+			if (heroChannelCount > 0) {
+				parts.push(t("hub.channelCount", { count: heroChannelCount.toLocaleString() }));
+			}
+			eyebrow.textContent = parts.join(" · ");
+		};
+		update();
+		setInterval(update, 30_000);
+		window.__refreshHeroEyebrow = update;
+		document.addEventListener(LOCALE_EVENT, update);
+	}
+
+
+	// ──────────────────────────────────────────────────────────
+	// Hub dashboard signals
+	// ──────────────────────────────────────────────────────────
+	const liveTileArt = document.getElementById("livetv-tile-art");
+	const liveTileSub = document.getElementById("livetv-tile-sub");
+	const moviesTileArt = document.getElementById("movies-tile-art");
+		const seriesTileArt = document.getElementById("series-tile-art");
+		const featuredHero = document.getElementById("featured-hero");
+		const featuredTitle = document.getElementById("featured-title");
+		const featuredMeta = document.getElementById("featured-meta");
+		const featuredDescription = document.getElementById("featured-description");
+		const featuredBackdrop = document.getElementById("featured-backdrop-image") as HTMLImageElement | null;
+		const featuredPlay = document.getElementById("featured-play") as HTMLAnchorElement | null;
+			const featuredMore = document.getElementById("featured-more") as HTMLAnchorElement | null;
+			const featuredTrailer = document.getElementById("featured-trailer") as HTMLVideoElement | null;
+			const featuredTrailerToggle = document.getElementById("featured-trailer-toggle") as HTMLButtonElement | null;
+			const moviePreviewModal = document.getElementById("movie-preview-modal") as HTMLDialogElement | null;
+			const moviePreviewImage = document.getElementById("movie-preview-image") as HTMLImageElement | null;
+			const moviePreviewTitle = document.getElementById("movie-preview-title");
+			const moviePreviewMeta = document.getElementById("movie-preview-meta");
+			const moviePreviewDescription = document.getElementById("movie-preview-description");
+			const moviePreviewOpen = document.getElementById("movie-preview-open") as HTMLAnchorElement | null;
+
+	const rotators = [];
+	function stopRotator() {
+		for (const rotator of rotators) clearInterval(rotator);
+		rotators.length = 0;
+	}
+
+	function startRotator(el, urls) {
+		if (!el || !urls.length) return;
+		const layers = [document.createElement("img"), document.createElement("img")];
+		for (const layer of layers) {
+			layer.className = "tile-art__layer";
+			layer.alt = "";
+			layer.decoding = "async";
+			layer.loading = "eager";
+			layer.referrerPolicy = "no-referrer";
+			layer.onerror = () => {
+				delete layer.dataset.on;
+			};
+			el.appendChild(layer);
+		}
+		let idx = 0;
+		let active = 0;
+		layers[active].src = urls[0];
+		layers[active].dataset.on = "true";
+		const advance = () => {
+			if (document.hidden) return;
+			idx = (idx + 1) % urls.length;
+			const next = active === 0 ? 1 : 0;
+			layers[next].src = urls[idx];
+			layers[next].dataset.on = "true";
+			delete layers[active].dataset.on;
+			active = next;
+		};
+		rotators.push(setInterval(advance, 8000));
+	}
+
+	function pickRandom(arr, count) {
+		if (arr.length <= count) return arr.slice();
+		const seen = new Set();
+		const out = [];
+		while (out.length < count && seen.size < arr.length) {
+			const idx = Math.floor(Math.random() * arr.length);
+			if (seen.has(idx)) continue;
+			seen.add(idx);
+			out.push(arr[idx]);
+		}
+		return out;
+	}
+
+	async function setupTileArt() {
+		try {
+			stopRotator();
+				const active = await getActiveEntry();
+				if (!active) {
+					setupFeaturedHero([]);
+					return;
+				}
+			await Promise.all([
+				hydrateCache(active._id, "vod").catch(() => {}),
+				hydrateCache(active._id, "series").catch(() => {}),
+				hydrateCache(active._id, "live").catch(() => {}),
+				hydrateCache(active._id, "m3u").catch(() => {}),
+			]);
+				const vodEntries = (getCached(active._id, "vod")?.data || [])
+					.filter((m) => m && m.logo);
+				setupFeaturedHero(vodEntries);
+				if (moviesTileArt) {
+					const vod = vodEntries.map((m) => m.logo);
+				const picks = pickRandom(vod, 6);
+				moviesTileArt.replaceChildren();
+				if (picks.length) startRotator(moviesTileArt, picks);
+			}
+			if (seriesTileArt) {
+				const series = (getCached(active._id, "series")?.data || [])
+					.filter((s) => s && s.logo)
+					.map((s) => s.logo);
+				const picks = pickRandom(series, 6);
+				seriesTileArt.replaceChildren();
+				if (picks.length) startRotator(seriesTileArt, picks);
+			}
+			await setupLiveSignals(active);
+		} catch (e) {
+			log.warn("[hub] setupTileArt failed:", e);
+		}
+	}
+
+					function setupFeaturedHero(entries) {
+				if (!featuredHero || !featuredTitle || !featuredMeta || !featuredDescription || !featuredBackdrop || !featuredPlay || !featuredMore) return;
+				if (!entries?.length) {
+					featuredTitle.textContent = "Your next movie night starts here";
+					featuredMeta.replaceChildren(...["Movies", "Series", "Live TV"].map((item) => {
+						const tag = document.createElement("span");
+						tag.textContent = item;
+						return tag;
+					}));
+					featuredDescription.textContent = "Browse your connected catalogue, discover something new and keep every favourite in one cinematic home.";
+					featuredPlay.href = "/movies";
+					featuredMore.href = "/movies";
+					featuredHero.removeAttribute("hidden");
+					return;
+				}
+
+			// Deterministic daily offset prevents visual flicker while keeping the
+			// featured title fresh. All values come from the existing VOD cache.
+			const day = Math.floor(Date.now() / 86_400_000);
+			const entry = entries[day % entries.length];
+			const id = encodeURIComponent(String(entry.id ?? ""));
+			const detailHref = id ? `/movies/detail?id=${id}` : "/movies";
+			const meta = [entry.year, entry.rating ? `★ ${entry.rating}` : "", entry.categoryName || entry.category_name || ""]
+				.filter(Boolean)
+				.map(String);
+			featuredTitle.textContent = entry.name || "";
+			featuredMeta.replaceChildren(...meta.map((item) => {
+				const tag = document.createElement("span");
+				tag.textContent = item;
+				return tag;
+			}));
+				featuredDescription.textContent = entry.plot || entry.description || entry.name || "";
+				featuredBackdrop.src = entry.backdrop || entry.logo;
+				featuredBackdrop.onerror = () => { featuredBackdrop.removeAttribute("src"); };
+				featuredPlay.href = detailHref;
+				featuredMore.href = detailHref;
+				featuredMore.onclick = (event) => {
+					event.preventDefault();
+					if (!moviePreviewModal || !moviePreviewTitle || !moviePreviewDescription || !moviePreviewOpen || !moviePreviewMeta) return;
+					moviePreviewTitle.textContent = entry.name || "Movie preview";
+					moviePreviewDescription.textContent = entry.plot || entry.description || entry.name || "";
+					moviePreviewMeta.replaceChildren(...meta.map((item) => { const tag = document.createElement("span"); tag.textContent = item; return tag; }));
+					moviePreviewOpen.href = detailHref;
+					if (moviePreviewImage) { moviePreviewImage.src = entry.backdrop || entry.logo || ""; moviePreviewImage.alt = entry.name || ""; }
+					moviePreviewModal.showModal();
+				};
+
+				const trailerUrl = entry.trailer || entry.trailer_url || entry.preview || entry.preview_url || entry.video_preview || "";
+				if (featuredTrailer && featuredTrailerToggle) {
+					featuredTrailer.pause();
+					featuredTrailer.removeAttribute("src");
+					featuredTrailer.hidden = true;
+					featuredTrailerToggle.hidden = true;
+					if (trailerUrl) {
+						featuredTrailer.src = String(trailerUrl);
+						featuredTrailer.hidden = false;
+						featuredTrailerToggle.hidden = false;
+						featuredTrailerToggle.textContent = "Pause trailer";
+						featuredTrailer.play().catch(() => {});
+						featuredTrailerToggle.onclick = () => {
+							if (featuredTrailer.paused) {
+								featuredTrailer.play().catch(() => {});
+								featuredTrailerToggle.textContent = "Pause trailer";
+							} else {
+								featuredTrailer.pause();
+								featuredTrailerToggle.textContent = "Play trailer";
+							}
+						};
+					}
+				}
+				featuredHero.removeAttribute("hidden");
+		}
+
+		async function setupLiveSignals(active) {
+		if (!liveTileArt || !liveTileSub) return;
+		await ensurePrefsLoaded();
+		const recents = getRecents(active._id, "live") || [];
+		const live = (getCached(active._id, "live")?.data || getCached(active._id, "m3u")?.data || []);
+		setHeroChannelCount(live.length);
+		const liveById = new Map(live.map((c) => [Number(c.id), c]));
+		let lastChannel = null;
+		if (recents.length) {
+			lastChannel = liveById.get(Number(recents[0].id)) || {
+				id: recents[0].id,
+				name: recents[0].name,
+				logo: recents[0].logo,
+				tvgId: null,
+			};
+		}
+		liveTileArt.replaceChildren();
+		if (!lastChannel) {
+			liveTileSub.textContent = t("hub.tile.livetv.sub");
+			return;
+		}
+		if (lastChannel.logo) {
+			const layer = document.createElement("img");
+			layer.className = "tile-art__layer tile-art__layer--logo";
+			layer.alt = "";
+			layer.decoding = "async";
+			layer.loading = "eager";
+			layer.referrerPolicy = "no-referrer";
+			layer.onerror = () => layer.remove();
+			layer.src = lastChannel.logo;
+			layer.dataset.on = "true";
+			liveTileArt.appendChild(layer);
+		}
+		const tvgId = lastChannel.tvgId || "";
+		const setOnAir = (programme) => {
+			if (!programme) return false;
+			liveTileSub.innerHTML =
+				`<span class="text-fg-3 uppercase tracking-wider text-eyebrow font-semibold mr-2">${escapeHtml(t("hub.tile.livetv.onNow"))}</span>` +
+				`<span class="text-fg-2">${escapeHtml(lastChannel.name)}</span>` +
+				`<span class="text-fg-3 mx-1.5">·</span>` +
+				`<span class="text-fg">${escapeHtml(programme.title)}</span>`;
+			return true;
+		};
+		const cached = getProgrammesSync(active._id);
+		const cachedHit = cached?.programmes && tvgId
+			? setOnAir(getNowNextForChannel(cached.programmes, lastChannel, active._id).current)
+			: false;
+		if (!cachedHit) {
+			liveTileSub.textContent = t("hub.tile.livetv.lastWatched", { name: lastChannel.name });
+			if (tvgId) {
+				try {
+					const creds = await loadCreds();
+					if (creds?.host) {
+						const state = await loadProgrammes(active._id, creds);
+						if (state?.programmes) {
+							const { current } = getNowNextForChannel(state.programmes, lastChannel, active._id);
+							if (current) setOnAir(current);
+						}
+					}
+				} catch {}
+			}
+		}
+	}
+
+	function escapeHtml(s) {
+		const d = document.createElement("div");
+		d.textContent = s || "";
+		return d.innerHTML;
+	}
+
+	if (typeof window !== "undefined") {
+		window.requestIdleCallback
+			? window.requestIdleCallback(setupTileArt, { timeout: 1500 })
+			: setTimeout(setupTileArt, 400);
+		document.addEventListener("xt:active-changed", setupTileArt);
+		document.addEventListener("xt:catalog-warmed", setupTileArt);
+	}
+</script>

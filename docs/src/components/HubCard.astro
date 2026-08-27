@@ -1,0 +1,49 @@
+---
+import Icon, { type IconName } from "./Icon.astro"
+
+interface Props {
+  href: string
+  title: string
+  body: string
+  icon: IconName
+  featured?: boolean
+}
+
+const { href, title, body, icon, featured = false } = Astro.props
+---
+
+<a
+  href={href}
+  class:list={[
+    "group relative grid grid-cols-[auto_1fr] items-start rounded-[10px] border border-line-soft bg-surface text-fg no-underline transition-[border-color,background-color,transform,box-shadow] duration-150 ease-(--ease-out-quart) hover:border-line hover:bg-surface-2 hover:no-underline motion-safe:hover:-translate-y-px motion-safe:hover:shadow-card-hover motion-safe:active:translate-y-0 motion-safe:active:duration-[80ms]",
+    featured ? "sm:col-span-2 gap-4 px-6 py-5" : "gap-3.5 px-5 py-4",
+  ]}
+>
+  <span
+    class:list={[
+      "inline-grid shrink-0 place-items-center rounded-lg bg-surface-2 text-fg-3 transition-colors duration-150 ease-(--ease-out-quart) group-hover:bg-accent-soft group-hover:text-accent",
+      featured ? "size-11" : "size-9",
+    ]}
+  >
+    <Icon name={icon} class={featured ? "size-6" : "size-5"} />
+  </span>
+  <div class="min-w-0">
+    <span
+      class:list={[
+        "block font-semibold tracking-[-0.005em]",
+        featured ? "mb-1 text-[1.125rem]" : "mb-1 text-[0.95rem]",
+      ]}
+      style={featured ? "view-transition-name: page-title" : undefined}
+    >
+      {title}
+    </span>
+    <p
+      class:list={[
+        "m-0 leading-snug text-fg-2",
+        featured ? "text-[0.95rem]" : "text-[0.85rem]",
+      ]}
+    >
+      {body}
+    </p>
+  </div>
+</a>

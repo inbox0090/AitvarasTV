@@ -1,0 +1,186 @@
+---
+import SearchInput from "@/components/SearchInput.astro";
+
+interface Props {
+	idPrefix: string;
+	showSyncToggle?: boolean;
+}
+
+const { idPrefix, showSyncToggle = false } = Astro.props;
+---
+
+<dialog
+	id={`${idPrefix}-dialog`}
+	aria-labelledby={`${idPrefix}-title`}
+	class="fixed inset-0 m-auto rounded-2xl border border-line bg-surface text-fg p-0
+		w-[min(34rem,calc(100vw-2rem))] h-[min(80dvh,42rem)]
+		backdrop:bg-black/60">
+	<div class="flex flex-col h-full p-4 gap-3">
+		<div class="flex items-center justify-between gap-3 shrink-0">
+			<h2
+				id={`${idPrefix}-title`}
+				data-i18n="list.chooseCategory"
+				class="text-base font-semibold">
+				Choose a category
+			</h2>
+			<button
+				id={`${idPrefix}-close`}
+				type="button"
+				data-i18n="common.close"
+				class="rounded-lg border border-line px-3 py-1.5 text-xs text-fg-2
+					hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent">
+				Close
+			</button>
+		</div>
+
+		<SearchInput
+			id={`${idPrefix}-search`}
+			label="Search categories"
+			placeholder="Search categories…"
+			labelKey="list.searchCategories"
+			placeholderKey="list.searchCategoriesPlaceholder"
+		/>
+
+		{showSyncToggle && (
+			<label
+				id={`${idPrefix}-sync`}
+				class="flex items-start gap-2.5 rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-fg-2 shrink-0
+					cursor-pointer hover:bg-surface-3 focus-within:border-accent transition-colors">
+				<input
+					id={`${idPrefix}-sync-input`}
+					type="checkbox"
+					checked
+					class="mt-0.5 size-4 accent-accent shrink-0"
+				/>
+				<span class="flex flex-col leading-tight min-w-0">
+					<span data-i18n="epg.cat.syncWithLive" class="text-fg">
+						Sync with Live TV
+					</span>
+					<span data-i18n="epg.cat.syncWithLiveHelp" class="text-xs text-fg-3">
+						Use the same hidden / allowed categories you set on Live TV.
+					</span>
+				</span>
+			</label>
+		)}
+
+		<div
+			role="radiogroup"
+			aria-label="Sort categories"
+			data-i18n-attr="aria-label:list.sortCategories"
+			class="cat-sort-toggle flex p-0.5 rounded-lg border border-line bg-surface-2 text-xs shrink-0">
+			<button
+				id={`${idPrefix}-sort-default`}
+				type="button"
+				role="radio"
+				aria-checked="true"
+				data-sort="default"
+				data-i18n="sort.sourceOrder"
+				class="flex-1 rounded-md px-3 py-1.5 font-medium transition-colors text-fg-2
+					hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+					aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-sm">
+				Source order
+			</button>
+			<button
+				id={`${idPrefix}-sort-az`}
+				type="button"
+				role="radio"
+				aria-checked="false"
+				data-sort="az"
+				data-i18n="sort.az"
+				class="flex-1 rounded-md px-3 py-1.5 font-medium transition-colors text-fg-2
+					hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+					aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-sm">
+				A-Z
+			</button>
+			<button
+				id={`${idPrefix}-sort-za`}
+				type="button"
+				role="radio"
+				aria-checked="false"
+				data-sort="za"
+				data-i18n="sort.za"
+				class="flex-1 rounded-md px-3 py-1.5 font-medium transition-colors text-fg-2
+					hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+					aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-sm">
+				Z-A
+			</button>
+		</div>
+
+		<div
+			role="radiogroup"
+			aria-label="Category filter mode"
+			data-i18n-attr="aria-label:livetv.cat.modeAria"
+			class="cat-mode-toggle flex p-0.5 rounded-lg border border-line bg-surface-2 text-xs shrink-0">
+			<button
+				id={`${idPrefix}-mode-hide`}
+				type="button"
+				role="radio"
+				aria-checked="true"
+				data-mode="hide"
+				data-i18n="livetv.cat.hide"
+				class="flex-1 rounded-md px-3 py-1.5 font-medium transition-colors text-fg-2
+					hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+					aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-sm">
+				Hide selected
+			</button>
+			<button
+				id={`${idPrefix}-mode-select`}
+				type="button"
+				role="radio"
+				aria-checked="false"
+				data-mode="select"
+				data-i18n="livetv.cat.select"
+				class="flex-1 rounded-md px-3 py-1.5 font-medium transition-colors text-fg-2
+					hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+					aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-sm">
+				Show only selected
+			</button>
+		</div>
+
+		<div
+			id={`${idPrefix}-select-actions`}
+			hidden
+			class="flex flex-wrap items-center gap-2 text-xs shrink-0">
+			<button
+				id={`${idPrefix}-show-selected`}
+				type="button"
+				aria-pressed="false"
+				class="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-fg-2
+					hover:text-fg hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+					aria-pressed:bg-accent-soft aria-pressed:text-fg aria-pressed:border-accent">
+				<span class="cat-show-selected-box inline-flex size-3.5 items-center justify-center rounded-sm border border-fg-3 transition-colors">
+					<svg class="cat-show-selected-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="10" height="10"><polyline points="20 6 9 17 4 12"/></svg>
+				</span>
+				<span data-i18n="livetv.cat.showOnly">Show selected only</span>
+			</button>
+			<span class="ml-auto inline-flex items-center gap-3">
+				<button
+					id={`${idPrefix}-select-all`}
+					type="button"
+					data-i18n="livetv.cat.selectAllVisible"
+					class="text-accent hover:underline focus-visible:underline focus-visible:outline-none">
+					Select all visible
+				</button>
+				<button
+					id={`${idPrefix}-select-clear`}
+					type="button"
+					data-i18n="livetv.cat.clear"
+					class="text-fg-3 hover:text-fg focus-visible:text-fg focus-visible:outline-none">
+					Clear
+				</button>
+			</span>
+		</div>
+
+		<div
+			id={`${idPrefix}-list`}
+			class="relative flex-1 min-h-0 overflow-auto custom-scroll pr-2">
+		</div>
+
+		<div
+			id={`${idPrefix}-list-status`}
+			data-i18n="list.noPlaylistSelected"
+			class="px-2.5 text-sm text-fg-3 tabular-nums shrink-0">
+			No playlist selected.
+		</div>
+	</div>
+</dialog>

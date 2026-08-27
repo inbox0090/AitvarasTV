@@ -1,0 +1,142 @@
+---
+// Custom resize hit-zones for the frameless desktop window.
+//
+// With `decorations: false` (see tauri.conf.json + lib.rs set_decorations),
+// Windows leaves the WS_THICKFRAME invisible resize border in a state
+// that's only reliable on some configs (DPI, GPU driver, third-party
+// shell hooks all affect whether the cursor changes at the edges).
+// These HTML overlays + `startResizeDragging()` give us a deterministic
+// hit-strip regardless of OS quirks.
+//
+// Top corners (NW/NE) intentionally omitted: NW overlaps the brand
+// mark drag region in TitleBar.astro, NE overlaps min/max/close. The
+// straight top/left/right edges still cover those areas with axis-only
+// resize - good enough trade-off vs. fighting button hit-tests.
+//
+// Z-order:
+//   default app content       z-auto
+//   #xt-titlebar (drag bar)   z-10002 (TitleBar.astro)
+//   .xt-resize (these)        z-10003
+//   titlebar buttons          z-10004 (set in TitleBar.astro)
+---
+
+<div id="xt-resize-edges" aria-hidden="true">
+	<div data-resize-direction="North"      class="xt-resize xt-resize--n"></div>
+	<div data-resize-direction="South"      class="xt-resize xt-resize--s"></div>
+	<div data-resize-direction="East"       class="xt-resize xt-resize--e"></div>
+	<div data-resize-direction="West"       class="xt-resize xt-resize--w"></div>
+	<div data-resize-direction="SouthWest"  class="xt-resize xt-resize--sw"></div>
+	<div data-resize-direction="SouthEast"  class="xt-resize xt-resize--se"></div>
+</div>
+
+<script>
+	const isTauri =
+		typeof window !== "undefined" &&
+		(!!(window as any).__TAURI_INTERNALS__ || !!(window as any).__TAURI__)
+	const isAndroid =
+		typeof navigator !== "undefined" &&
+		/Android/i.test(navigator.userAgent || "")
+
+	if (isTauri && !isAndroid) {
+		;(async () => {
+			try {
+				const mod = await import("@tauri-apps/api/window")
+				const win = mod.getCurrentWindow()
+				const edges = document.getElementById("xt-resize-edges")
+				if (!edges) return
+
+				const syncMaximized = async () => {
+					try {
+						const isMax = await win.isMaximized()
+						edges.toggleAttribute("data-maximized", isMax)
+					} catch {}
+				}
+				syncMaximized()
+				win.onResized(syncMaximized)
+
+				edges.addEventListener("mousedown", async (event) => {
+					if (event.button !== 0) return
+					const target = (event.target as HTMLElement).closest<HTMLElement>(
+						".xt-resize",
+					)
+					if (!target) return
+					const direction = target.dataset.resizeDirection
+					if (!direction) return
+					event.preventDefault()
+					try {
+						await win.startResizeDragging(direction as any)
+					} catch (err) {
+						console.warn("[xt:resize] startResizeDragging failed:", err)
+					}
+				})
+			} catch (err) {
+				console.warn("[xt:resize] init failed:", err)
+			}
+		})()
+	}
+</script>
+
+<style is:global>
+	.xt-resize {
+		display: none;
+		position: fixed;
+		z-index: 10003;
+		background: transparent;
+		-webkit-app-region: no-drag;
+		app-region: no-drag;
+		touch-action: none;
+	}
+	html[data-tauri-desktop] .xt-resize {
+		display: block;
+	}
+	html[data-tauri-desktop] #xt-resize-edges[data-maximized] .xt-resize {
+		display: none;
+	}
+
+	/* Straight edges - 6px hit-strip. */
+	.xt-resize--n {
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 6px;
+		cursor: ns-resize;
+	}
+	.xt-resize--s {
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 6px;
+		cursor: ns-resize;
+	}
+	.xt-resize--e {
+		top: 0;
+		right: 0;
+		bottom: 0;
+		width: 6px;
+		cursor: ew-resize;
+	}
+	.xt-resize--w {
+		top: 0;
+		left: 0;
+		bottom: 0;
+		width: 6px;
+		cursor: ew-resize;
+	}
+
+	/* Bottom corners - 14x14 so they're noticeably easier to grab
+	   than Windows' default 4px corners. */
+	.xt-resize--sw {
+		bottom: 0;
+		left: 0;
+		width: 14px;
+		height: 14px;
+		cursor: nesw-resize;
+	}
+	.xt-resize--se {
+		bottom: 0;
+		right: 0;
+		width: 14px;
+		height: 14px;
+		cursor: nwse-resize;
+	}
+</style>

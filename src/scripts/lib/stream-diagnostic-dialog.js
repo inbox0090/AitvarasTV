@@ -1,0 +1,329 @@
+// Lazy-mounted "Test stream" diagnostic dialog.
+import { log, redactUrl, redactDeep } from "@/scripts/lib/log.js"
+import { attachDialogSpatialNav } from "@/scripts/lib/dialog-spatial-nav.js"
+import { diagnoseStream, summarizeReport } from "@/scripts/lib/stream-diagnostic.js"
+import { t } from "@/scripts/lib/i18n.js"
+import { writeClipboardText } from "@/scripts/lib/clipboard"
+
+const DIALOG_ID = "stream-diagnostic-dialog"
+
+/** @type {HTMLDialogElement | null} */
+let dlg = null
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    c === "&" ? "&amp;" :
+    c === "<" ? "&lt;" :
+    c === ">" ? "&gt;" :
+    c === '"' ? "&quot;" : "&#39;"
+  )
+}
+
+function fmtBytes(n) {
+  if (!n) return "-"
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function fmtMs(n) {
+  if (n == null) return "-"
+  if (n < 1000) return `${n} ms`
+  return `${(n / 1000).toFixed(2)} s`
+}
+
+function ensureDialog() {
+  if (dlg) return dlg
+  if (typeof document === "undefined") return null
+
+  const node = document.createElement("dialog")
+  node.id = DIALOG_ID
+  node.setAttribute("aria-labelledby", `${DIALOG_ID}-title`)
+  node.className = [
+    "fixed inset-0 m-auto rounded-2xl border border-line bg-surface text-fg p-0",
+    "w-[min(40rem,calc(100vw-2rem))] h-[min(85dvh,46rem)]",
+    "backdrop:bg-black/60",
+  ].join(" ")
+  node.innerHTML = `
+    <div class="flex flex-col h-full p-5 sm:p-6 gap-4">
+      <header class="flex items-start justify-between gap-3 shrink-0">
+        <div class="flex flex-col gap-1 min-w-0">
+          <div data-role="eyebrow" data-i18n="streamTest.eyebrow" class="text-eyebrow font-medium uppercase tracking-widest text-fg-3">${escapeHtml(t("streamTest.eyebrow"))}</div>
+          <h2 id="${DIALOG_ID}-title" data-role="title" class="text-xl font-semibold tracking-[-0.01em] truncate"></h2>
+          <div data-role="url" class="text-2xs text-fg-3 break-all font-mono"></div>
+        </div>
+        <button
+          data-role="close"
+          type="button"
+          aria-label="${escapeHtml(t("common.close"))}"
+          data-i18n-attr="aria-label:common.close"
+          class="rounded-lg border border-line min-h-11 px-3 py-1.5 text-xs text-fg-2 shrink-0
+                 hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent">
+          <span data-i18n="common.close">${escapeHtml(t("common.close"))}</span>
+        </button>
+      </header>
+
+      <div data-role="verdict" class="rounded-xl border px-3 py-2 text-sm flex items-center gap-2"></div>
+
+      <div data-role="report" class="overflow-auto custom-scroll min-h-0 flex flex-col gap-3 text-sm"></div>
+
+      <footer class="flex flex-wrap items-center gap-2 pt-1 shrink-0">
+        <button
+          data-role="copy"
+          type="button"
+          class="btn">
+          ${escapeHtml(t("streamTest.copy"))}
+        </button>
+        <button
+          data-role="rerun"
+          type="button"
+          class="btn ml-auto">
+          ${escapeHtml(t("streamTest.runAgain"))}
+        </button>
+      </footer>
+    </div>
+  `
+  document.body.appendChild(node)
+  attachDialogSpatialNav(node)
+
+  node.addEventListener("click", (event) => {
+    if (event.target === node) node.close()
+  })
+  node.querySelector("[data-role='close']")?.addEventListener("click", () => node.close())
+
+  dlg = node
+  return dlg
+}
+
+function renderStage(label, content) {
+  return `
+    <section class="rounded-xl border border-line bg-bg p-3 flex flex-col gap-1.5">
+      <div class="text-eyebrow font-medium uppercase tracking-widest text-fg-3">${escapeHtml(label)}</div>
+      <div class="text-sm text-fg-2 leading-relaxed">${content}</div>
+    </section>
+  `
+}
+
+function renderHead(head) {
+  if (!head) return `<span class="text-fg-3">${escapeHtml(t("streamTest.pending"))}</span>`
+  if (head.error) {
+    return `<span class="text-bad">${escapeHtml(redactUrl(head.error))}</span>` +
+      ` <span class="text-fg-3">(${escapeHtml(head.method)}, ${fmtMs(head.latencyMs)})</span>`
+  }
+  const status = head.ok
+    ? `<span class="text-ok font-semibold tabular-nums">${head.status} ${escapeHtml(head.statusText)}</span>`
+    : `<span class="text-bad font-semibold tabular-nums">${head.status} ${escapeHtml(head.statusText)}</span>`
+  const ct = head.contentType
+    ? `<div class="text-2xs text-fg-3 font-mono break-all">${escapeHtml(head.contentType)}</div>`
+    : ""
+  const len = head.contentLength
+    ? `<div class="text-2xs text-fg-3 tabular-nums">${escapeHtml(t("streamTest.length", { bytes: fmtBytes(head.contentLength) }))}</div>`
+    : ""
+  const meta = `<div class="text-2xs text-fg-3 tabular-nums">${escapeHtml(head.method)} · ${fmtMs(head.latencyMs)}</div>`
+  const fallback = head.fallback
+    ? `<div class="text-2xs text-warn">${escapeHtml(t("streamTest.headRejected", { reason: head.fallback }))}</div>`
+    : ""
+  return `${status}${ct}${len}${meta}${fallback}`
+}
+
+function renderPlaylist(pl) {
+  if (!pl) return `<span class="text-fg-3">${escapeHtml(t("streamTest.pending"))}</span>`
+  if (pl.error) {
+    return `<span class="text-bad">${escapeHtml(redactUrl(pl.error))}</span>`
+  }
+  const heading = pl.isMaster
+    ? t("streamTest.masterPlaylist", { n: pl.variantCount })
+    : t("streamTest.mediaPlaylist", { n: pl.segmentCount })
+  const top = pl.topVariant
+    ? `<div class="text-2xs text-fg-3 tabular-nums">${escapeHtml(t("streamTest.topVariant", { res: pl.topVariant.resolution || "?", bw: (pl.topVariant.bandwidth / 1000).toFixed(0) }))}${pl.topVariant.codecs ? ` (${escapeHtml(pl.topVariant.codecs)})` : ""}</div>`
+    : ""
+  const td = pl.targetDuration
+    ? `<div class="text-2xs text-fg-3 tabular-nums">${escapeHtml(t("streamTest.targetDuration", { n: pl.targetDuration }))}</div>`
+    : ""
+  const total = pl.totalDuration
+    ? `<div class="text-2xs text-fg-3 tabular-nums">${escapeHtml(t("streamTest.window", { duration: pl.totalDuration.toFixed(1) }))}</div>`
+    : ""
+  const meta = `<div class="text-2xs text-fg-3 tabular-nums">${pl.bytes ? fmtBytes(pl.bytes) : ""} · ${fmtMs(pl.latencyMs)}</div>`
+  return `<div class="font-medium text-fg">${escapeHtml(heading)}</div>${top}${td}${total}${meta}`
+}
+
+function renderDash(dash) {
+  if (dash.error) return `<span class="text-bad">${escapeHtml(redactUrl(dash.error))}</span>`
+  const heading = `<div class="font-medium text-fg">${escapeHtml(t("streamTest.dash.manifest") || "MPEG-DASH manifest")}</div>`
+  const codecs = dash.videoCodecs?.length
+    ? `<div class="text-2xs text-fg-3 font-mono break-all">${escapeHtml(dash.videoCodecs.join(", "))}</div>`
+    : ""
+  const flags = []
+  if (dash.hevc) flags.push("HEVC")
+  if (dash.clearKey) flags.push("ClearKey")
+  else if (dash.encrypted) flags.push(t("streamTest.dash.encrypted") || "encrypted")
+  const flagsRow = flags.length
+    ? `<div class="text-2xs text-warn tabular-nums">${escapeHtml(flags.join(" · "))}</div>`
+    : ""
+  const meta = `<div class="text-2xs text-fg-3 tabular-nums">${dash.bytes ? fmtBytes(dash.bytes) : ""} · ${fmtMs(dash.latencyMs)}</div>`
+  return `${heading}${codecs}${flagsRow}${meta}`
+}
+
+function renderFirstSegment(seg) {
+  if (!seg) return `<span class="text-fg-3">${escapeHtml(t("streamTest.skipped"))}</span>`
+  const head = renderHead(seg)
+  const dur = seg.declaredDuration
+    ? `<div class="text-2xs text-fg-3 tabular-nums">${escapeHtml(t("streamTest.declaredDuration", { n: seg.declaredDuration.toFixed(2) }))}</div>`
+    : ""
+  const url = `<div class="text-2xs text-fg-3 font-mono break-all">${escapeHtml(redactUrl(seg.url || ""))}</div>`
+  return `${head}${dur}${url}`
+}
+
+function renderWebView(probe) {
+  if (!probe) return `<span class="text-fg-3">${escapeHtml(t("streamTest.skipped"))}</span>`
+  const status = probe.blocked
+    ? `<span class="text-bad font-semibold">${escapeHtml(t("streamTest.webview.blocked"))}</span>`
+    : probe.ok
+      ? `<span class="text-ok font-semibold tabular-nums">${probe.status} ${escapeHtml(t("streamTest.webview.allowed"))}</span>`
+      : `<span class="text-warn font-semibold tabular-nums">${probe.status}</span>`
+  const err = probe.error
+    ? `<div class="text-2xs text-fg-3 break-all">${escapeHtml(redactUrl(probe.error))}</div>`
+    : ""
+  const acao =
+    probe.acao != null
+      ? `<div class="text-2xs text-fg-3 font-mono break-all">ACAO: ${escapeHtml(String(probe.acao))}</div>`
+      : ""
+  const meta = `<div class="text-2xs text-fg-3 tabular-nums">${fmtMs(probe.latencyMs)}</div>`
+  return `${status}${err}${acao}${meta}`
+}
+
+function paint(report, opts) {
+  const node = ensureDialog()
+  if (!node) return
+
+  const titleEl = node.querySelector("[data-role='title']")
+  if (titleEl) titleEl.textContent = opts.title || t("streamTest.title")
+  const urlEl = node.querySelector("[data-role='url']")
+  if (urlEl) urlEl.textContent = redactUrl(report?.url || "")
+
+  const verdictEl = /** @type {HTMLElement | null} */ (
+    node.querySelector("[data-role='verdict']")
+  )
+  if (verdictEl) {
+    if (report?.finishedAt) {
+      const summary = summarizeReport(report)
+      verdictEl.classList.remove("border-line", "border-ok/40", "border-warn/40", "border-bad/40")
+      verdictEl.classList.remove("bg-bg", "bg-ok/5", "bg-warn/5", "bg-bad/5")
+      let verdictClass = ""
+      let verdictText = ""
+      if (summary.verdict === "ok") {
+        verdictClass = "border-ok/40 bg-ok/5 text-ok"
+        verdictText = t("streamTest.reachable")
+      } else if (summary.verdict === "warn") {
+        verdictClass = "border-warn/40 bg-warn/5 text-warn"
+        verdictText = t("streamTest.warn")
+      } else if (summary.verdict === "info") {
+        verdictClass = "border-accent/40 bg-accent-soft text-accent"
+        verdictText = t("streamTest.info") || "Info"
+      } else {
+        verdictClass = "border-bad/40 bg-bad/5 text-bad"
+        verdictText = t("streamTest.unreachable")
+      }
+      verdictEl.className =
+        "rounded-xl border px-3 py-2 text-sm flex items-center gap-2 " + verdictClass
+      verdictEl.innerHTML = `<span class="font-semibold">${verdictText}</span> <span class="text-fg-2">${escapeHtml(redactUrl(summary.reason || ""))}</span>`
+    } else {
+      verdictEl.className =
+        "rounded-xl border border-line bg-bg px-3 py-2 text-sm flex items-center gap-2 text-fg-2"
+      verdictEl.innerHTML = `<span class="inline-flex size-2 rounded-full bg-accent animate-pulse"></span> ${escapeHtml(t("streamTest.probing"))}`
+    }
+  }
+
+  const reportEl = node.querySelector("[data-role='report']")
+  if (reportEl) {
+    if (report?.nonHttp) {
+      // Non-HTTP streams (rtsp/rtmp/udp/...) can't be probed from a WebView
+      // - the endpoint / HLS / segment stages are all N/A. Hide the empty
+      // rows and just show the verdict.
+      reportEl.innerHTML = ""
+    } else {
+      reportEl.innerHTML = [
+        renderStage(t("streamTest.stage.endpoint"), renderHead(report?.head)),
+        report?.dash
+          ? renderStage(t("streamTest.stage.dash") || "DASH", renderDash(report.dash))
+          : renderStage(t("streamTest.stage.playlist"), renderPlaylist(report?.playlist)),
+        renderStage(t("streamTest.stage.firstSegment"), renderFirstSegment(report?.firstSegment)),
+        renderStage(t("streamTest.stage.webview"), renderWebView(report?.webviewProbe)),
+      ].join("")
+    }
+  }
+}
+
+/**
+ * Open the diagnostic dialog and start probing the URL. Re-running calls
+ * diagnoseStream again with the same opts.
+ *
+ * @param {Object} opts
+ * @param {string} opts.url
+ * @param {string} [opts.title]
+ */
+export function openStreamDiagnostic(opts) {
+  const node = ensureDialog()
+  if (!node) return
+
+  let cancelled = false
+  let lastReport = null
+
+  async function run() {
+    cancelled = false
+    paint({ url: opts.url }, opts)
+    const report = await diagnoseStream(opts.url, (partial) => {
+      if (cancelled) return
+      lastReport = partial
+      paint(partial, opts)
+    })
+    if (cancelled) return
+    lastReport = report
+    paint(report, opts)
+  }
+
+  const copyBtn = /** @type {HTMLButtonElement | null} */ (
+    node.querySelector("[data-role='copy']")
+  )
+  if (copyBtn) {
+    copyBtn.onclick = async () => {
+      if (!lastReport) return
+      try {
+        await writeClipboardText(JSON.stringify(redactDeep(lastReport), null, 2))
+        copyBtn.textContent = t("streamTest.copied")
+        setTimeout(() => {
+          if (copyBtn) copyBtn.textContent = t("streamTest.copy")
+        }, 1400)
+      } catch (error) {
+        log.warn("[xt:diagnostic] copy failed:", error)
+      }
+    }
+  }
+
+  const rerunBtn = /** @type {HTMLButtonElement | null} */ (
+    node.querySelector("[data-role='rerun']")
+  )
+  if (rerunBtn) rerunBtn.onclick = () => run()
+
+  node.addEventListener(
+    "close",
+    () => {
+      cancelled = true
+    },
+    { once: true }
+  )
+
+  if (!node.open) {
+    if (typeof node.showModal === "function") node.showModal()
+    else node.setAttribute("open", "")
+  }
+
+  requestAnimationFrame(() => {
+    const target = /** @type {HTMLElement | null} */ (
+      node.querySelector("[data-role='close']")
+    )
+    target?.focus?.({ preventScroll: true })
+  })
+
+  run()
+}

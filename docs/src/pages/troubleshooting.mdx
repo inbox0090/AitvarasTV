@@ -1,0 +1,115 @@
+---
+layout: ../layouts/DocsLayout.astro
+title: "Troubleshooting"
+description: "Test a stream, fix EPG offsets, recover from a failed login."
+lede: "Most playback problems come down to one of three things: the provider, the network, or the User-Agent. Here's how to find out which."
+---
+
+import Callout from "../components/Callout.astro"
+
+## A stream won't play
+
+Right-click the channel (or movie / episode) and pick **Test stream**. The dialog tells you whether the stream is reachable.
+
+- **Reachable but won't play** - the in-app player can't decode the codec. Open it in MPV or VLC instead. See [External players](./external-players/).
+- **403 or 401 response** - your provider is blocking you based on your User-Agent. Open **Settings > Network** and pick a different UA preset (VLC media player, Kodi, OTT Navigator, and Samsung Smart TV cover the common cases). A 401 can also mean the stream needs HTTP Basic auth - if your provider gave you a `user:pass@` URL, make sure you pasted it intact, credentials included.
+- **Connection failed entirely** - the server is down, your network is blocking it, or the URL has changed. Check the provider's status page or contact support.
+
+## No sound, or "unsupported audio format"
+
+Some channels use audio formats the built-in player can't decode: AC-3 / E-AC-3, MP2, and DTS are common on TV streams. On Windows and Linux desktop, the app fixes this on the fly - either automatically or via a **Fix audio** button on the toast or failure panel.
+
+If that doesn't happen, check **Settings > Watching > Playback** for the FFmpeg status - it needs FFmpeg to do the fix, and will tell you if it can't find one. See [Audio formats & silent channels](./audio-formats/) for the full picture. If the *video* itself won't play (not just the audio), the fix is an external player instead - see [External players](./external-players/).
+
+## Subtitles button missing
+
+Either the file has no embedded text subtitles, or it's an MKV file on Android or the web, where only the desktop app can read them. External players show subtitles from any file, everywhere - see [External players](./external-players/). For the full picture, see [Subtitles](./subtitles/).
+
+## A stream added from a website stopped playing
+
+Sites often hand out short-lived stream links. Run **Add from website** again with the same page URL to grab a fresh link. See [Add from website](./add-from-website/).
+
+## "Couldn't load channels - check your login"
+
+The Xtream sign-in failed. Most common causes:
+
+- **Missing `http://` or `https://`** in the Server URL. Some providers send URLs without it - add it yourself.
+- **Wrong port.** Check your provider's URL for a number after the colon (`:8080`, `:25461`) and include it.
+- **Expired account.** Some providers return a generic error for expired accounts. Check with your provider.
+- **Region-locked.** The provider sees your IP from a region they don't serve.
+- **Wrong embedded credentials.** For `user:pass@` M3U URLs, the embedded credentials must be correct. Special characters are handled automatically (percent-encoded forms also work).
+- **CORS (web version only).** For `user:pass@` M3U URLs in the browser, the server must also allow cross-origin requests with an Authorization header. The desktop and Android apps are not affected.
+
+<Callout type="tip">
+  Not sure if your provider gave you an Xtream login or an M3U URL? Paste whatever you have into the Server URL field. The app figures out the format automatically.
+</Callout>
+
+## EPG is shifted by a few hours
+
+Your provider is sending TV listing times in their own timezone instead of UTC. Open **Settings > Watching > EPG time zone** and adjust **Offset for active playlist** until the program guide matches reality. The offset is saved per playlist.
+
+## EPG titles look like random letters
+
+Some providers encode TV listing data in a way that looks like gibberish until decoded. The app handles this automatically. If you still see scrambled text after refreshing, it's a provider-side issue - [file an issue](https://github.com/infinitel8p/Extreme-InfiniTV/issues/new/choose) and include the affected channel.
+
+## Streams play but lag or buffer
+
+- Turn on **Performance mode** in **Settings > Appearance > Performance mode**. It strips out decorative animations to free up CPU - helps a lot on older Android TV boxes and low-end devices.
+- For heavy 4K or HEVC streams on Android, the built-in player is often the bottleneck. Hand off to VLC or MX Player, or try the experimental **Native Android player**. See [External players](./external-players/).
+- Check whether your provider limits how many streams you can run at once. **Settings > Playlists > Active playlist health** shows your account's connection count and cap.
+
+## HEVC / H.265 channels won't play
+
+Some channels use the HEVC (H.265) codec, which not every device can decode:
+
+- **Windows**: the app detects the missing codec and offers a one-click install of Microsoft's **HEVC Video Extensions** (a small download; the Microsoft Store build deep-links to the Store instead). Restart playback after the install finishes.
+- **Other platforms**: if the device can't decode HEVC in the app, hand the stream off to an external player - see [External players](./external-players/). Channels the app knows are HEVC show an **HEVC** badge in the Live TV list, and **Test stream** reports when HEVC support is the problem.
+
+## A stream works in VLC but not the in-app player (Android)
+
+Some providers gate channels behind a specific User-Agent. The in-app player respects per-channel User-Agents on Android, but not every channel sets one correctly. Try a custom UA in **Settings > Network** (the **Custom** field overrides the preset) - your provider can tell you which value to use.
+
+## Picture-in-picture problems (Android)
+
+Make sure you're on the latest release first - a black-PiP bug was fixed back in 1.5. If PiP still doesn't behave the way you want (lock-screen controls, background playback), try the experimental **Native Android player** under **Settings > Watching**, which uses Android's own player with full PiP support.
+
+## Downloads won't resume
+
+Downloads pick back up from where they left off when you restart the app. If one is stuck:
+
+- Check the download folder under **Settings > Data > Downloads** is set and writable. On Android, you may need to re-grant folder access.
+- Cancel the stuck download and re-queue it.
+- If the same download keeps failing partway through, delete the partial file and start over - some providers send mismatched file sizes that confuse the resume logic.
+
+## "TMDB rejected this key" or "Couldn't reach TMDB"
+
+These come from **Test key** in **Settings > Network > TMDb metadata**:
+
+- **TMDB rejected this key** - the key or token itself is wrong, expired, or has extra spaces. Copy it again from themoviedb.org and paste it fresh.
+- **Couldn't reach TMDB** - a network problem, not the key. Check your connection and try again in a moment.
+
+See [TMDb metadata](./tmdb-metadata/) for getting a key and what enrichment adds.
+
+## Linux: garbled video or the app crashes on start
+
+Some Linux GPU drivers (Raspberry Pi's V3D, Nvidia's proprietary driver, and most virtual machines) don't get along with WebKitGTK's default DMA-BUF renderer - symptoms range from a garbled/striped screen to an immediate crash with `EGL_BAD_PARAMETER`. The app detects known-risky hardware automatically and switches to a safe rendering mode, but you can also control it yourself:
+
+- **Settings > Appearance > Rendering** lets you force Auto, Faster, or Safe. Faster runs as a one-time trial after restarting - confirm it in the prompt that appears, or it reverts on its own the next time you launch.
+- Safe mode applies a different fix per hardware: Raspberry Pi gets `WEBKIT_DMABUF_RENDERER_FORCE_SHM=1`, while Nvidia's proprietary driver and virtual machines get `WEBKIT_DISABLE_DMABUF_RENDERER=1`.
+- Do not set `WEBKIT_DISABLE_DMABUF_RENDERER=1` on a Raspberry Pi yourself: on WebKitGTK 2.52 it fixes the garbled screen but crashes on every page navigation. Only `WEBKIT_DMABUF_RENDERER_FORCE_SHM=1` is safe there.
+- If the app won't get far enough to reach Settings, run it once with `--safe-rendering` on the command line - this immediately resets the saved setting to Safe (picking the correct variable for your hardware) before anything else runs.
+
+## Sending useful bug reports
+
+On Android, **Settings > Data > Storage > Share logs** shares the newest log file from your device. On desktop, **Settings > Data > Storage > Open log folder** opens the folder with the daily log files. Attach the log to a [GitHub issue](https://github.com/infinitel8p/Extreme-InfiniTV/issues/new/choose). Logs have credentials and stream URLs redacted automatically.
+
+Each launch also writes a one-line snapshot near the top of the log: app version, platform, player backend, and a handful of settings that affect playback (performance mode, network timeout, FFmpeg availability, and similar) plus your playlist count and active playlist's type. It never includes your server, username, or password - only the setting names and values that help narrow down a bug.
+
+## MKV or AVI file won't play
+
+- **MKV**: on Windows, the app plays it directly and automatically retries through its bundled FFmpeg if a particular file won't decode. On macOS and Linux, MKV always goes through that same automatic fix. If FFmpeg isn't available, or the fix still can't play the file, you'll see a message that the built-in player can't play it on this platform - open it in MPV or VLC instead. See [Audio formats & silent channels](./audio-formats/) for checking FFmpeg status, and [External players](./external-players/) for the fallback.
+- **AVI**: not supported by the built-in player on any platform - it always needs an external player.
+
+## Start fresh
+
+If you want to wipe everything and start over, open **Settings > Danger zone > Reset everything**. This clears your playlists, favorites, watch history, and cache. Downloaded files stay on disk - you can delete them manually if you don't need them.

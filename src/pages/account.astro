@@ -1,0 +1,135 @@
+---
+import Layout from "@/layouts/Layout.astro"
+---
+
+<Layout pageTitle="Account settings">
+  <main class="account-page" data-account-page>
+    <div class="account-page__head">
+      <div>
+        <p class="auth-card__eyebrow">MEMBER SPACE</p>
+        <h1>Account settings</h1>
+        <p>Manage your streaming access, plan, and account security from one place.</p>
+      </div>
+      <a class="account-page__back" href="/">Back to home <span>↗</span></a>
+    </div>
+
+    <div class="account-page__grid">
+      <section class="account-panel account-panel--hero">
+        <div class="account-panel__eyebrow">CURRENT ACCESS</div>
+        <div class="account-plan__row"><div><h2 data-account-plan>Loading account…</h2><p data-account-email></p></div><span class="account-status" data-account-status>Checking</span></div>
+        <div class="account-plan__meta"><span data-account-category>—</span><span data-account-period>—</span><span data-account-connections>—</span></div>
+        <p class="account-panel__hint" data-account-billing-copy>Your plan controls the playlist categories and bouquet groups available to your account.</p>
+      </section>
+
+      <section class="account-panel">
+        <div class="account-panel__eyebrow">PLAN CONTROL</div>
+        <h2>Choose a different plan</h2>
+        <p class="account-muted">Changing the selected plan updates your channel access. Use checkout to activate a paid plan and extend access.</p>
+        <div class="account-plan-list" data-account-plans aria-live="polite"></div>
+        <p class="account-status-message" data-plan-status role="status"></p>
+      </section>
+
+      <section class="account-panel">
+        <div class="account-panel__eyebrow">SECURITY</div>
+        <h2>Change password</h2>
+        <p class="account-muted">Use a unique password with at least 8 characters.</p>
+        <form class="account-form" data-password-form>
+          <label>Current password<input name="currentPassword" type="password" autocomplete="current-password" required /></label>
+          <label>New password<input name="newPassword" type="password" autocomplete="new-password" minlength="8" required /></label>
+          <label>Repeat new password<input name="newPassword2" type="password" autocomplete="new-password" minlength="8" required /></label>
+          <button class="account-primary" type="submit">Update password <span>↗</span></button>
+          <p class="account-status-message" data-password-status role="status"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const root = document.querySelector("[data-account-page]")
+  const planName = root?.querySelector("[data-account-plan]")
+  const email = root?.querySelector("[data-account-email]")
+  const status = root?.querySelector("[data-account-status]")
+  const category = root?.querySelector("[data-account-category]")
+  const period = root?.querySelector("[data-account-period]")
+  const connections = root?.querySelector("[data-account-connections]")
+  const billingCopy = root?.querySelector("[data-account-billing-copy]")
+  const plansRoot = root?.querySelector("[data-account-plans]")
+  const planStatus = root?.querySelector("[data-plan-status]")
+  const passwordForm = root?.querySelector("[data-password-form]")
+  const passwordStatus = root?.querySelector("[data-password-status]")
+  let access = null
+  let plans = []
+
+  const money = (plan) => {
+    const amount = Number(plan?.price || 0)
+    if (!Number.isFinite(amount) || amount <= 0) return "Provider pricing"
+    try { return new Intl.NumberFormat(undefined, { style: "currency", currency: plan.currency || "EUR" }).format(amount) } catch { return `${amount.toFixed(2)} ${plan.currency || "EUR"}` }
+  }
+  const setMessage = (element, text, kind = "") => { if (element) { element.textContent = text; element.dataset.kind = kind } }
+  const renderPlans = () => {
+    if (!plansRoot) return
+    plansRoot.replaceChildren(...plans.map((plan) => {
+      const card = document.createElement("article")
+      card.className = "account-plan-option"
+      if (plan.slug === access?.plan?.slug) card.classList.add("is-current")
+      const top = document.createElement("div")
+      top.className = "account-plan-option__top"
+      const title = document.createElement("strong"); title.textContent = plan.name
+      const price = document.createElement("b"); price.textContent = money(plan)
+      top.append(title, price)
+      const meta = document.createElement("p"); meta.textContent = `${plan.category || "General"} · ${plan.durationDays || 30} days · ${plan.maxConnections || 1} connection${Number(plan.maxConnections) === 1 ? "" : "s"}`
+      const actions = document.createElement("div"); actions.className = "account-plan-option__actions"
+      const select = document.createElement("button"); select.type = "button"; select.className = "account-secondary"; select.textContent = plan.slug === access?.plan?.slug ? "Current plan" : "Select plan"; select.disabled = plan.slug === access?.plan?.slug
+      select.addEventListener("click", async () => {
+        select.disabled = true; setMessage(planStatus, "Saving plan…")
+        try {
+          const response = await fetch("/api/auth/select-plan", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, credentials: "same-origin", body: JSON.stringify({ planSlug: plan.slug }) })
+          const result = await response.json().catch(() => ({}))
+          if (!response.ok) throw new Error(result.error || "Unable to change plan.")
+          access = result.access || access
+          setMessage(planStatus, `${plan.name} selected. Start checkout to activate paid access.`, "success")
+          renderAccount(); renderPlans()
+        } catch (error) { setMessage(planStatus, error instanceof Error ? error.message : "Unable to change plan.", "error"); select.disabled = false }
+      })
+      const checkout = document.createElement("button"); checkout.type = "button"; checkout.className = "account-primary account-primary--small"; checkout.textContent = "Pay with Stripe"; checkout.disabled = !Number(plan.price || 0)
+      checkout.title = checkout.disabled ? "Set a paid price in admin Plans & pricing first" : "Open secure Stripe checkout"
+      checkout.addEventListener("click", async () => {
+        checkout.disabled = true; setMessage(planStatus, "Opening secure checkout…")
+        try {
+          const response = await fetch("/api/billing/checkout", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, credentials: "same-origin", body: JSON.stringify({ planSlug: plan.slug }) })
+          const result = await response.json().catch(() => ({}))
+          if (!response.ok) throw new Error(result.error || "Checkout is unavailable.")
+          window.location.assign(result.url)
+        } catch (error) { setMessage(planStatus, error instanceof Error ? error.message : "Checkout is unavailable.", "error"); checkout.disabled = false }
+      })
+      actions.append(select, checkout); card.append(top, meta, actions); return card
+    }))
+  }
+  const renderAccount = () => {
+    const plan = access?.plan
+    if (planName) planName.textContent = plan?.name || "No plan selected"
+    if (email) email.textContent = access?.user?.email || ""
+    if (status) { status.textContent = access?.subscription?.active ? "Active" : plan ? "Plan selected" : "Choose a plan"; status.dataset.state = access?.subscription?.active ? "active" : "pending" }
+    if (category) category.textContent = plan ? `${plan.category || "General"} access` : "No channel access"
+    if (period) period.textContent = plan ? `${plan.durationDays || 30} days` : "Choose a plan"
+    if (connections) connections.textContent = plan ? `${plan.maxConnections || 1} connection${Number(plan.maxConnections) === 1 ? "" : "s"}` : "—"
+    if (billingCopy) billingCopy.textContent = access?.subscription?.active ? "Your paid access is active. You can extend or change your plan below." : "Select a plan below and use checkout to activate paid channel access."
+  }
+  const load = async () => {
+    try {
+      const [meResponse, plansResponse] = await Promise.all([fetch("/api/auth/me", { credentials: "same-origin", cache: "no-store" }), fetch("/api/plans", { cache: "no-store" })])
+      access = await meResponse.json(); const payload = await plansResponse.json(); plans = Array.isArray(payload?.plans) ? payload.plans : []
+      if (access?.role !== "client") { window.location.assign(`/auth?next=${encodeURIComponent("/account")}`); return }
+      renderAccount(); renderPlans()
+      const billing = new URLSearchParams(window.location.search).get("billing")
+      if (billing === "success") setMessage(planStatus, "Payment return received. Access is activated after Stripe webhook confirmation.", "success")
+      if (billing === "cancelled") setMessage(planStatus, "Checkout was cancelled. Your current access was not changed.")
+    } catch { window.location.assign(`/auth?next=${encodeURIComponent("/account")}`) }
+  }
+  passwordForm?.addEventListener("submit", async (event) => {
+    event.preventDefault(); const data = new FormData(passwordForm); const button = passwordForm.querySelector("button"); if (button) button.disabled = true; setMessage(passwordStatus, "Updating…")
+    try { const response = await fetch("/api/auth/password", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, credentials: "same-origin", body: JSON.stringify(Object.fromEntries(data.entries())) }); const result = await response.json().catch(() => ({})); if (!response.ok) throw new Error(result.error || "Unable to update password."); passwordForm.reset(); setMessage(passwordStatus, "Password updated successfully.", "success") } catch (error) { setMessage(passwordStatus, error instanceof Error ? error.message : "Unable to update password.", "error") } finally { if (button) button.disabled = false }
+  })
+  void load()
+</script>

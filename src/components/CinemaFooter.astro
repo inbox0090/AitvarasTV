@@ -1,0 +1,65 @@
+---
+import { IconBrandGithub, IconHeart, IconHelpCircle, IconMail, IconShieldCheck } from "@tabler/icons-svelte"
+---
+
+<!--
+  Presentation-only footer. No provider, account, billing, playback or
+  application-state behavior is changed here.
+-->
+<footer class="cinema-footer">
+  <div class="cinema-footer__inner">
+    <section class="cinema-footer__intro" aria-label="AitvarasTV">
+      <a href="/" class="cinema-footer__brand" aria-label="AitvarasTV - Home">
+        <span class="cinema-top-nav__mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span><strong>AitvarasTV</strong></span>
+      </a>
+      <p>Live TV, movies, series, playlists, and downloads in one focused viewing experience.</p>
+      <div class="cinema-footer__socials" aria-label="Project links">
+        <a href="https://github.com/infinitel8p/Extreme-InfiniTV" target="_blank" rel="noreferrer" aria-label="GitHub">
+          <IconBrandGithub aria-hidden="true" stroke={1.8} />
+        </a>
+        <a href="/docs" aria-label="Help center">
+          <IconHelpCircle aria-hidden="true" stroke={1.8} />
+        </a>
+        <a href="/docs" aria-label="Contact">
+          <IconMail aria-hidden="true" stroke={1.8} />
+        </a>
+      </div>
+    </section>
+
+    <nav class="cinema-footer__columns" aria-label="Footer navigation">
+      <section>
+        <h2>Support</h2>
+        <a href="/docs#faq">FAQ</a>
+        <a href="/docs">Help center</a>
+        <a href="/docs#contact">Contact us</a>
+      </section>
+      <section>
+        <h2>Experience</h2>
+        <a href="/movies" data-i18n="nav.movies">Movies</a>
+        <a href="/series" data-i18n="nav.series">Series</a>
+        <a href="/downloads" data-i18n="nav.downloads">Downloads</a>
+      </section>
+      <section>
+        <h2>Account</h2>
+        <a href="/login" data-i18n="playlist.addCta">Add a playlist</a>
+        <a href="/settings" data-i18n="nav.settings">Settings</a>
+        <a href="/watchlist" data-i18n="nav.watchlist">Watch later</a>
+      </section>
+      <section>
+        <h2>Legal</h2>
+        <a href="/docs#terms">Terms of use</a>
+        <a href="/docs#privacy">Privacy policy</a>
+        <a href="/docs#cookies">Cookie preferences</a>
+      </section>
+    </nav>
+  </div>
+
+  <div class="cinema-footer__legal">
+    <span>© {new Date().getFullYear()} AitvarasTV</span>
+    <span class="cinema-footer__privacy"><IconShieldCheck aria-hidden="true" stroke={1.6} /> Your playlists stay yours.</span>
+    <a href="https://github.com/infinitel8p/Extreme-InfiniTV/blob/main/LICENSE" target="_blank" rel="noreferrer">
+      <IconHeart aria-hidden="true" stroke={1.6} /> GPL-3.0
+    </a>
+  </div>
+</footer>

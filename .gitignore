@@ -1,0 +1,69 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+docs/preview.log
+
+
+# environment variables
+.env
+.env.production
+.env.screenshots
+.screenshot-state.json
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# Local Netlify folder
+.netlify
+
+# keep buildfiles/ private (signing key, MSIX artifacts) except what CI needs
+buildfiles/*
+!buildfiles/sync-version.mjs
+!buildfiles/make-msix-ci.mjs
+!buildfiles/msix/
+!buildfiles/msix/**
+dump/
+
+# local dev tools / scratch scripts
+tools/
+
+# downloaded ffmpeg sidecar binaries (fetched by ensure-ffmpeg-sidecar.mjs)
+src-tauri/binaries/
+
+cmds.md
+store-listings.md
+
+.ds*
+.de*
+
+# Playwright visual regression: platform-foreign snapshots and run artifacts
+test-results/
+playwright-report/
+tests/visual/**/*-win32.png
+tests/visual/**/*-darwin.png
+
+# snap packaging: CI drops the release .deb here before building
+packaging/snap/local/
+
+.env.admin
+.env.admin.*
+.env
+
+# server runtime data and private credentials
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+data/

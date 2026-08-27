@@ -1,0 +1,454 @@
+@import "tailwindcss";
+@import "@fontsource-variable/geist";
+
+@theme {
+  --breakpoint-sm: 40em;
+  --breakpoint-md: 48em;
+  --breakpoint-lg: 64em;
+  --breakpoint-xl: 80em;
+
+  /* surfaces */
+  --color-bg:        light-dark(oklch(0.985 0.004 250), oklch(0.165 0.013 255));
+  --color-surface:   light-dark(oklch(1     0     0  ), oklch(0.215 0.013 255));
+  --color-surface-2: light-dark(oklch(0.965 0.005 250), oklch(0.265 0.013 255));
+  --color-surface-3: light-dark(oklch(0.93  0.007 250), oklch(0.32  0.013 255));
+  --color-line:      light-dark(oklch(0.9   0.008 250), oklch(0.34  0.013 255));
+  --color-line-soft: light-dark(oklch(0.94  0.005 250), oklch(0.27  0.013 255));
+
+  /* foreground */
+  --color-fg:   light-dark(oklch(0.21 0.014 255), oklch(0.97 0.005 250));
+  --color-fg-2: light-dark(oklch(0.4  0.013 255), oklch(0.78 0.011 250));
+  --color-fg-3: light-dark(oklch(0.46 0.013 255), oklch(0.66 0.011 250));
+
+  /* accent: soft fuchsia, used sparingly. Light value tuned to pass AA on body text. */
+  --color-accent:      light-dark(oklch(0.46 0.19 330), oklch(0.78 0.13 330));
+  --color-accent-soft: light-dark(oklch(0.46 0.19 330 / 0.08), oklch(0.78 0.13 330 / 0.14));
+  --color-accent-ring: light-dark(oklch(0.46 0.19 330 / 0.32), oklch(0.78 0.13 330 / 0.32));
+
+  /* semantic states. Light values deep enough to read as text on near-white (AA). */
+  --color-ok:        light-dark(oklch(0.42 0.11 160), oklch(0.79 0.11 160));
+  --color-ok-soft:   light-dark(oklch(0.42 0.11 160 / 0.06), oklch(0.79 0.11 160 / 0.10));
+  --color-warn:      light-dark(oklch(0.46 0.13 75 ), oklch(0.84 0.11 80 ));
+  --color-warn-soft: light-dark(oklch(0.46 0.13 75  / 0.06), oklch(0.84 0.11 80  / 0.10));
+  --color-bad:       light-dark(oklch(0.46 0.17 25 ), oklch(0.74 0.15 25 ));
+  --color-bad-soft:  light-dark(oklch(0.46 0.17 25  / 0.06), oklch(0.74 0.15 25  / 0.10));
+
+  --shadow-card: 0 1px 2px light-dark(oklch(0.21 0.014 255 / 0.03), oklch(0 0 0 / 0.18));
+  --shadow-card-hover: 0 6px 18px light-dark(oklch(0.21 0.014 255 / 0.06), oklch(0 0 0 / 0.25));
+  --shadow-drawer: 0 12px 32px light-dark(oklch(0.21 0.014 255 / 0.1), oklch(0 0 0 / 0.45));
+
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+    --nav-h: 56px;
+    --sidebar-w: 248px;
+    --max-content: 720px;
+  }
+
+  [data-theme="light"] { color-scheme: light; }
+  [data-theme="dark"]  { color-scheme: dark; }
+
+  /* accent presets mirrored from the app's xt_accent choice */
+  :root[data-accent="rose"] {
+    --color-accent:      light-dark(oklch(0.46 0.19 20), oklch(0.78 0.13 20));
+    --color-accent-soft: light-dark(oklch(0.46 0.19 20 / 0.08), oklch(0.78 0.13 20 / 0.14));
+    --color-accent-ring: light-dark(oklch(0.46 0.19 20 / 0.32), oklch(0.78 0.13 20 / 0.32));
+  }
+  :root[data-accent="ember"] {
+    --color-accent:      light-dark(oklch(0.46 0.19 55), oklch(0.78 0.13 55));
+    --color-accent-soft: light-dark(oklch(0.46 0.19 55 / 0.08), oklch(0.78 0.13 55 / 0.14));
+    --color-accent-ring: light-dark(oklch(0.46 0.19 55 / 0.32), oklch(0.78 0.13 55 / 0.32));
+  }
+  :root[data-accent="emerald"] {
+    --color-accent:      light-dark(oklch(0.46 0.19 160), oklch(0.78 0.13 160));
+    --color-accent-soft: light-dark(oklch(0.46 0.19 160 / 0.08), oklch(0.78 0.13 160 / 0.14));
+    --color-accent-ring: light-dark(oklch(0.46 0.19 160 / 0.32), oklch(0.78 0.13 160 / 0.32));
+  }
+  :root[data-accent="cyan"] {
+    --color-accent:      light-dark(oklch(0.46 0.19 210), oklch(0.78 0.13 210));
+    --color-accent-soft: light-dark(oklch(0.46 0.19 210 / 0.08), oklch(0.78 0.13 210 / 0.14));
+    --color-accent-ring: light-dark(oklch(0.46 0.19 210 / 0.32), oklch(0.78 0.13 210 / 0.32));
+  }
+  :root[data-accent="blue"] {
+    --color-accent:      light-dark(oklch(0.46 0.19 250), oklch(0.78 0.13 250));
+    --color-accent-soft: light-dark(oklch(0.46 0.19 250 / 0.08), oklch(0.78 0.13 250 / 0.14));
+    --color-accent-ring: light-dark(oklch(0.46 0.19 250 / 0.32), oklch(0.78 0.13 250 / 0.32));
+  }
+  :root[data-accent="violet"] {
+    --color-accent:      light-dark(oklch(0.46 0.19 295), oklch(0.78 0.13 295));
+    --color-accent-soft: light-dark(oklch(0.46 0.19 295 / 0.08), oklch(0.78 0.13 295 / 0.14));
+    --color-accent-ring: light-dark(oklch(0.46 0.19 295 / 0.32), oklch(0.78 0.13 295 / 0.32));
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    font-kerning: normal;
+    font-feature-settings: "kern", "liga", "calt";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Default: links inherit from their context. Body-content links get the
+     accent treatment via .prose below. This keeps nav / sidebar / chrome
+     links neutral without per-element overrides. */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--color-accent-ring);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+/* prose styles applied to markdown-rendered content */
+
+.prose {
+  max-width: var(--max-content);
+  min-width: 0;
+}
+
+.prose a {
+  color: var(--color-accent);
+}
+
+.prose h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0 0 0.625rem;
+  color: var(--color-fg);
+  text-wrap: balance;
+}
+
+.prose .lede {
+  font-size: 1.25rem;
+  color: var(--color-fg-2);
+  margin: 0 0 2rem;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+.prose h2,
+.prose h3 {
+  position: relative;
+  color: var(--color-fg);
+  scroll-margin-top: calc(var(--nav-h) + 1rem);
+  text-wrap: balance;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  line-height: 1.25;
+  margin: 3rem 0 1rem;
+}
+
+.prose h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  line-height: 1.35;
+  margin: 2rem 0 0.625rem;
+}
+
+.anchor-copied {
+  position: absolute;
+  left: calc(100% + 0.4rem);
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  background: color-mix(in oklab, var(--color-ok) 14%, var(--color-surface));
+  border: 1px solid color-mix(in oklab, var(--color-ok) 35%, var(--color-line-soft));
+  color: var(--color-fg);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms var(--ease-out-quart),
+              transform 220ms var(--ease-out-quart);
+}
+
+.anchor-copied.is-visible {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anchor-copied {
+    transition: none;
+  }
+}
+
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 1rem;
+  color: var(--color-fg);
+  text-wrap: pretty;
+}
+
+.prose li {
+  margin-bottom: 0.3rem;
+}
+
+.prose strong {
+  color: var(--color-fg);
+  font-weight: 600;
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  padding: 0.1em 0.36em;
+  background: var(--color-surface-2);
+  border-radius: 4px;
+  color: var(--color-fg);
+  font-variant-numeric: tabular-nums;
+}
+
+.prose a code {
+  color: inherit;
+}
+
+.prose pre {
+  margin: 0 0 1.25rem;
+  padding: 0.95rem 1.05rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-line-soft);
+  background: var(--color-surface-2) !important;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.prose pre code {
+  padding: 0;
+  background: transparent !important;
+  border: 0;
+  font-size: inherit;
+}
+
+/* shiki dual-theme: swap to dark variables when dark mode is active */
+[data-theme="dark"] .prose pre.astro-code,
+[data-theme="dark"] .prose pre.astro-code span {
+  color: var(--shiki-dark) !important;
+}
+[data-theme="dark"] .prose pre.astro-code {
+  background: var(--shiki-dark-bg) !important;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .prose pre.astro-code,
+  :root:not([data-theme]) .prose pre.astro-code span {
+    color: var(--shiki-dark) !important;
+  }
+  :root:not([data-theme]) .prose pre.astro-code {
+    background: var(--shiki-dark-bg) !important;
+  }
+}
+
+.prose blockquote {
+  margin: 0 0 1.25rem;
+  padding: 0.6rem 0 0.6rem 1rem;
+  border-left: 3px solid var(--color-accent-soft);
+  color: var(--color-fg-2);
+  font-style: normal;
+}
+
+.prose blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.prose hr {
+  margin: 2.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.prose table {
+  display: block;
+  overflow-x: auto;
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 1.5rem;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.prose th,
+.prose td {
+  padding: 0.6rem 0.85rem 0.6rem 0;
+  border-bottom: 1px solid var(--color-line-soft);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.45;
+}
+
+.prose tr:last-child td {
+  border-bottom: 0;
+}
+
+.prose th {
+  font-weight: 600;
+  color: var(--color-fg);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-fg-2);
+  border-bottom-color: var(--color-line);
+}
+
+.prose kbd {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  padding: 0.12em 0.45em;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-line);
+  border-radius: 4px;
+  color: var(--color-fg);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  vertical-align: 0.05em;
+}
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+  animation-timing-function: var(--ease-out-quart);
+}
+
+::view-transition-old(page-title),
+::view-transition-new(page-title) {
+  animation-duration: 400ms;
+  animation-timing-function: var(--ease-out-quart);
+}
+
+::view-transition-old(sidebar-active),
+::view-transition-new(sidebar-active) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-out-quart);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* Scroll-driven reading progress meter. Chrome/Edge/Safari support;
+   Firefox renders the bar at 0 width (invisible) which is the right fallback. */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 50;
+  pointer-events: none;
+  transform-origin: 0 50%;
+  background: var(--color-accent);
+  opacity: 0.5;
+  transform: scaleX(0);
+}
+
+@supports (animation-timeline: scroll()) {
+  .reading-progress {
+    animation: reading-progress linear;
+    animation-timeline: scroll(root);
+  }
+  @keyframes reading-progress {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reading-progress {
+    display: none;
+  }
+}
+
+[data-embed="true"] header.sticky,
+[data-embed="true"] main > footer,
+[data-embed="true"] .reading-progress {
+  display: none;
+}
+[data-embed="true"] body {
+  --nav-h: 0px;
+}
+[data-embed="true"] .docs-sidebar {
+  position: static;
+  inset: auto;
+  width: 100%;
+  translate: 0;
+  transform: none;
+  border-left: 0;
+  background: transparent;
+  padding: 0.5rem 0 1.5rem;
+  box-shadow: none;
+  max-height: none;
+  overflow: visible;
+}
+[data-embed="true"] .docs-sidebar [data-menu-close] {
+  display: none;
+}
+[data-embed="true"] .sidebar-scrim {
+  display: none;
+}
+@media (min-width: 48em) {
+  [data-embed="true"] .docs-sidebar {
+    position: sticky;
+    top: 0.5rem;
+    padding: 0;
+    padding-right: 0.5rem;
+    max-height: calc(100vh - 1rem);
+    overflow-y: auto;
+  }
+}
+[data-embed="true"] main h1 {
+  margin-top: 0;
+}

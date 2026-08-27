@@ -1,0 +1,715 @@
+---
+import "../styles/global.css"
+import SiteNav from "../components/SiteNav.astro"
+import Sidebar from "../components/Sidebar.astro"
+import CommandPalette from "../components/CommandPalette.astro"
+
+interface Frontmatter {
+  title: string
+  description?: string
+  lede?: string
+}
+
+interface Heading {
+  depth: number
+  slug: string
+  text: string
+}
+
+interface Props extends Frontmatter {
+  frontmatter?: Frontmatter
+  headings?: Heading[]
+  file?: string
+}
+
+const props = Astro.props
+const { title, description, lede } = props.frontmatter ?? props
+const pageHeadings: Heading[] = (props.headings ?? []).filter((heading) => heading.depth === 2)
+const pageTitle = title === "AitvarasTV docs" ? title : `${title} - AitvarasTV docs`
+const titleHtml = title.replace(
+  /InfiniTV/g,
+  'Infini<span class="font-extrabold tracking-[0.04em] text-accent ml-[0.05em]">TV</span>',
+)
+const metaDescription = description ?? lede ?? "Documentation for AitvarasTV, a cross-platform IPTV player for Xtream Codes and M3U playlists."
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "")
+const ogImage = "https://raw.githubusercontent.com/infinitel8p/Extreme-InfiniTV/refs/heads/main/src-tauri/icons/logos/icon-1024.png"
+
+const navLinks = [
+  { href: `${base}/`, label: "Docs" },
+  { href: "https://github.com/infinitel8p/Extreme-InfiniTV", label: "GitHub", external: true },
+  { href: "https://github.com/infinitel8p/Extreme-InfiniTV/releases/latest", label: "Download", external: true },
+]
+
+const sidebarGroups = [
+  {
+    title: "Start",
+    links: [
+      { href: `${base}/`, label: "Overview" },
+      { href: `${base}/getting-started/`, label: "Getting started" },
+    ],
+  },
+  {
+    title: "Using the app",
+    links: [
+      { href: `${base}/playlists/`, label: "Playlists (Xtream + M3U)" },
+      { href: `${base}/custom-playlists/`, label: "Custom playlists" },
+      { href: `${base}/add-from-website/`, label: "Add from website" },
+      { href: `${base}/catch-up/`, label: "Catch-up TV & replay" },
+      { href: `${base}/audio-formats/`, label: "Audio formats & silent channels" },
+      { href: `${base}/subtitles/`, label: "Subtitles" },
+      { href: `${base}/tmdb-metadata/`, label: "TMDb metadata" },
+      { href: `${base}/external-players/`, label: "External players" },
+      { href: `${base}/keyboard-and-d-pad/`, label: "Keyboard + D-pad" },
+      { href: `${base}/troubleshooting/`, label: "Troubleshooting" },
+    ],
+  },
+  {
+    title: "Contribute",
+    links: [
+      { href: `${base}/translations/`, label: "Translations" },
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      { href: "https://github.com/infinitel8p/Extreme-InfiniTV", label: "GitHub", external: true },
+      { href: "https://github.com/infinitel8p/Extreme-InfiniTV/releases/latest", label: "Download", external: true },
+      { href: "https://github.com/infinitel8p/Extreme-InfiniTV/discussions", label: "Discussions", external: true },
+    ],
+  },
+]
+
+const here = Astro.url.pathname.replace(/\/+$/, "") || "/"
+const pathWithoutBase = here.startsWith(base) ? here.slice(base.length) || "/" : here
+let editPath: string
+if (props.file) {
+  const normalized = props.file.replace(/\\/g, "/")
+  const idx = normalized.lastIndexOf("/src/pages/")
+  editPath = idx >= 0 ? normalized.slice(idx + "/src/pages".length) : "/index.astro"
+} else {
+  editPath = pathWithoutBase === "/" ? "/index.astro" : `${pathWithoutBase}.mdx`
+}
+const editUrl = `https://github.com/infinitel8p/Extreme-InfiniTV/blob/main/docs/src/pages${editPath}`
+---
+
+<!doctype html>
+<html lang="en" data-docs-base={base}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={metaDescription} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:image" content={ogImage} />
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/infinitel8p/Extreme-InfiniTV/refs/heads/main/src-tauri/icons/logos/icon-128.png" />
+    <script is:inline>
+      (() => {
+        try {
+          const params = new URLSearchParams(window.location.search)
+          if (params.get("embed") === "1") {
+            document.documentElement.setAttribute("data-embed", "true")
+          }
+          const themeFromQuery = params.get("theme")
+          if (themeFromQuery === "light" || themeFromQuery === "dark") {
+            document.documentElement.setAttribute("data-theme", themeFromQuery)
+          } else {
+            const saved = localStorage.getItem("xt-docs-theme")
+            if (saved === "light" || saved === "dark") {
+              document.documentElement.setAttribute("data-theme", saved)
+            }
+          }
+          const ACCENT_PRESETS = ["rose", "ember", "emerald", "cyan", "blue", "violet"]
+          const accentFromQuery = params.get("accent")
+          if (ACCENT_PRESETS.includes(accentFromQuery)) {
+            document.documentElement.setAttribute("data-accent", accentFromQuery)
+          }
+        } catch {}
+      })()
+    </script>
+  </head>
+  <body class="bg-bg text-fg">
+    <div class="reading-progress" aria-hidden="true"></div>
+    <div role="status" aria-live="polite" class="sr-only" data-status-region></div>
+    <SiteNav base={base} navLinks={navLinks} />
+    <CommandPalette />
+
+    <div class="mx-auto grid max-w-300 grid-cols-1 gap-0 px-4 pt-5 pb-12 md:grid-cols-[var(--sidebar-w)_minmax(0,1fr)] md:gap-12 md:px-6 md:pt-9 md:pb-16">
+      <Sidebar groups={sidebarGroups} currentPath={here} pageHeadings={pageHeadings} />
+
+      <main class="prose min-w-0">
+        <h1 set:html={titleHtml} style="view-transition-name: page-title" />
+        {lede && <p class="lede">{lede}</p>}
+        <slot />
+        <footer class="mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-line-soft pt-6 text-[0.86rem] text-fg-3">
+          <span>
+            AitvarasTV
+            <span class="mx-2 inline-block text-line">·</span>
+            GPL-3.0-or-later
+          </span>
+          <span>
+            <a href="https://github.com/infinitel8p/Extreme-InfiniTV/issues" rel="noopener" target="_blank" class="text-fg-2 hover:text-fg">Report an issue<span class="sr-only"> (opens in new tab)</span></a>
+            <span class="mx-2 inline-block text-line">·</span>
+            <a href={editUrl} rel="noopener" target="_blank" class="text-fg-2 hover:text-fg">Edit this page<span class="sr-only"> (opens in new tab)</span></a>
+          </span>
+        </footer>
+      </main>
+    </div>
+
+    <script is:inline>
+      (() => {
+        if (document.documentElement.getAttribute("data-embed") !== "true") return
+        const here = new URL(window.location.href)
+        const baseHref = (document.documentElement.dataset.docsBase || "/").replace(/\/$/, "") + "/"
+
+        const isInternalHref = (href) => {
+          if (!href) return false
+          if (href.startsWith("#")) return false
+          try {
+            const target = new URL(href, here)
+            return target.origin === here.origin && target.pathname.startsWith(baseHref)
+          } catch {
+            return false
+          }
+        }
+
+        const rewriteAnchors = (root) => {
+          root.querySelectorAll("a[href]").forEach((anchor) => {
+            if (anchor.dataset.embedRewritten === "1") return
+            if (anchor.target === "_blank") return
+            const href = anchor.getAttribute("href")
+            if (!isInternalHref(href)) return
+            try {
+              const url = new URL(href, here)
+              url.searchParams.set("embed", "1")
+              const theme = document.documentElement.getAttribute("data-theme")
+              if (theme === "light" || theme === "dark") url.searchParams.set("theme", theme)
+              const accent = document.documentElement.getAttribute("data-accent")
+              if (accent) url.searchParams.set("accent", accent)
+              anchor.setAttribute("href", url.pathname + url.search + url.hash)
+              anchor.dataset.embedRewritten = "1"
+            } catch {}
+          })
+        }
+        rewriteAnchors(document)
+
+        const ACCENT_PRESETS = ["rose", "ember", "emerald", "cyan", "blue", "violet"]
+        window.addEventListener("message", (event) => {
+          const data = event.data
+          if (!data || typeof data !== "object") return
+          if (data.type === "xt-docs:theme" && (data.theme === "light" || data.theme === "dark")) {
+            document.documentElement.setAttribute("data-theme", data.theme)
+          }
+          if (data.type === "xt-docs:accent") {
+            if (ACCENT_PRESETS.includes(data.accent)) {
+              document.documentElement.setAttribute("data-accent", data.accent)
+            } else {
+              document.documentElement.removeAttribute("data-accent")
+            }
+          }
+        })
+      })();
+
+      (() => {
+        const toggleBtn = document.querySelector("[data-menu-toggle]")
+        const closeBtn = document.querySelector("[data-menu-close]")
+        const sidebar = document.getElementById("sidebar")
+        const scrim = document.querySelector("[data-scrim]")
+        const statusRegion = document.querySelector("[data-status-region]")
+        const mobileMq = window.matchMedia("(max-width: 47.99em)")
+        if (!toggleBtn || !sidebar) return
+
+        const announce = (message) => {
+          if (!statusRegion) return
+          statusRegion.textContent = ""
+          requestAnimationFrame(() => { statusRegion.textContent = message })
+        }
+
+        const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        let triggerEl = null
+
+        const setOpen = (open) => {
+          const wasOpen = sidebar.getAttribute("data-open") === "true"
+          sidebar.setAttribute("data-open", String(open))
+          toggleBtn.setAttribute("aria-expanded", String(open))
+          if (scrim) scrim.setAttribute("data-open", String(open))
+          document.body.style.overflow = open ? "hidden" : ""
+
+          if (open && !wasOpen) {
+            triggerEl = document.activeElement instanceof HTMLElement ? document.activeElement : null
+            const target = sidebar.querySelector("[data-menu-close]") || sidebar.querySelector("a[href]")
+            if (target instanceof HTMLElement) requestAnimationFrame(() => target.focus())
+          } else if (!open && wasOpen && triggerEl && triggerEl.isConnected) {
+            triggerEl.focus()
+            triggerEl = null
+          }
+        }
+
+        toggleBtn.addEventListener("click", () => {
+          setOpen(sidebar.getAttribute("data-open") !== "true")
+        })
+
+        if (closeBtn) closeBtn.addEventListener("click", () => setOpen(false))
+        if (scrim) scrim.addEventListener("click", () => setOpen(false))
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && sidebar.getAttribute("data-open") === "true") {
+            setOpen(false)
+          }
+        })
+
+        sidebar.addEventListener("keydown", (event) => {
+          if (event.key !== "Tab") return
+          if (sidebar.getAttribute("data-open") !== "true") return
+          if (!mobileMq.matches) return
+          const focusables = Array.from(sidebar.querySelectorAll(FOCUSABLE))
+            .filter((element) => !element.hasAttribute("disabled") && element.offsetParent !== null)
+          if (focusables.length === 0) return
+          const first = focusables[0]
+          const last = focusables[focusables.length - 1]
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault()
+            last.focus()
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault()
+            first.focus()
+          }
+        })
+
+        mobileMq.addEventListener("change", (event) => {
+          if (!event.matches && sidebar.getAttribute("data-open") === "true") setOpen(false)
+        })
+
+        sidebar.querySelectorAll("a[href]").forEach((link) => {
+          link.addEventListener("click", () => {
+            if (mobileMq.matches) setOpen(false)
+          })
+        })
+
+        const themeToggle = document.querySelector("[data-theme-toggle]")
+        const darkMq = window.matchMedia("(prefers-color-scheme: dark)")
+        const effectiveTheme = () => {
+          const explicit = document.documentElement.getAttribute("data-theme")
+          if (explicit === "light" || explicit === "dark") return explicit
+          return darkMq.matches ? "dark" : "light"
+        }
+        const updateThemeLabel = () => {
+          if (!themeToggle) return
+          themeToggle.setAttribute(
+            "aria-label",
+            effectiveTheme() === "dark" ? "Switch to light theme" : "Switch to dark theme",
+          )
+        }
+        if (themeToggle) {
+          const apply = (theme) => {
+            if (theme !== "light" && theme !== "dark") return
+            document.documentElement.setAttribute("data-theme", theme)
+            try { localStorage.setItem("xt-docs-theme", theme) } catch {}
+            updateThemeLabel()
+          }
+          themeToggle.addEventListener("click", () => {
+            apply(effectiveTheme() === "dark" ? "light" : "dark")
+          })
+          darkMq.addEventListener("change", updateThemeLabel)
+          updateThemeLabel()
+        }
+
+        const flashCopied = (anchor) => {
+          const existing = anchor.querySelector(".anchor-copied")
+          if (existing) existing.remove()
+          const note = document.createElement("span")
+          note.className = "anchor-copied"
+          note.textContent = "Link copied"
+          anchor.appendChild(note)
+          requestAnimationFrame(() => note.classList.add("is-visible"))
+          window.setTimeout(() => {
+            note.classList.remove("is-visible")
+            window.setTimeout(() => note.remove(), 220)
+          }, 1100)
+        }
+
+        const anchorHashClasses = [
+          "anchor-hash",
+          "absolute left-[-1.15rem] top-1/2 -translate-y-1/2",
+          "px-[0.2rem] text-[0.75em] font-normal text-fg-3 no-underline opacity-0",
+          "transition-opacity duration-[120ms] ease-(--ease-out-quart)",
+          "group-hover/h:opacity-70 focus-visible:opacity-70",
+          "hover:opacity-100 hover:text-accent",
+          "pointer-coarse:opacity-40",
+        ].join(" ")
+
+        document.querySelectorAll(".prose :is(h2, h3)[id]").forEach((heading) => {
+          const id = heading.getAttribute("id")
+          if (!id) return
+          heading.classList.add("group/h")
+          const anchor = document.createElement("a")
+          anchor.href = "#" + id
+          anchor.className = anchorHashClasses
+          anchor.setAttribute("aria-label", "Copy link to this section")
+          anchor.textContent = "#"
+          anchor.addEventListener("click", async (event) => {
+            if (!navigator.clipboard) return
+            event.preventDefault()
+            const absolute = new URL("#" + id, window.location.href).toString()
+            history.replaceState(null, "", "#" + id)
+            try {
+              await navigator.clipboard.writeText(absolute)
+              flashCopied(anchor)
+              announce("Section link copied")
+            } catch {}
+          })
+          heading.insertBefore(anchor, heading.firstChild)
+        })
+
+        const ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>'
+        const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="size-3.5" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>'
+
+        const copyBtnClasses = [
+          "code-copy",
+          "absolute top-1.5 right-1.5 inline-grid place-items-center size-9 pointer-coarse:size-11",
+          "rounded-md border border-line-soft bg-surface",
+          "text-fg-3 cursor-pointer",
+          "opacity-0 group-hover/code:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100",
+          "transition-[opacity,color,background-color] duration-150 ease-(--ease-out-quart)",
+          "hover:text-fg hover:bg-surface-2",
+        ].join(" ")
+
+        document.querySelectorAll(".prose pre").forEach((pre) => {
+          if (pre.querySelector(".code-copy")) return
+          pre.classList.add("group/code", "relative")
+          const btn = document.createElement("button")
+          btn.type = "button"
+          btn.className = copyBtnClasses
+          btn.setAttribute("aria-label", "Copy code")
+          btn.innerHTML = ICON_COPY
+          btn.addEventListener("click", async () => {
+            const code = pre.querySelector("code")
+            if (!code || !navigator.clipboard) return
+            try {
+              await navigator.clipboard.writeText(code.textContent || "")
+              btn.innerHTML = ICON_CHECK
+              btn.classList.add("text-ok!")
+              btn.setAttribute("aria-label", "Copied")
+              announce("Code copied")
+              window.setTimeout(() => {
+                btn.innerHTML = ICON_COPY
+                btn.classList.remove("text-ok!")
+                btn.setAttribute("aria-label", "Copy code")
+              }, 1500)
+            } catch {}
+          })
+          pre.appendChild(btn)
+        })
+
+        const tocLinks = document.querySelectorAll("[data-page-toc] [data-toc-slug]")
+        if (tocLinks.length > 0) {
+          const linkBySlug = new Map()
+          tocLinks.forEach((link) => {
+            const slug = link.getAttribute("data-toc-slug")
+            if (slug) linkBySlug.set(slug, link)
+          })
+
+          let currentSlug = ""
+          let scrollLock = false
+
+          const setActive = (slug) => {
+            if (slug === currentSlug) return
+            currentSlug = slug
+            tocLinks.forEach((link) => {
+              if (link.getAttribute("data-toc-slug") === slug) {
+                link.setAttribute("aria-current", "true")
+              } else {
+                link.removeAttribute("aria-current")
+              }
+            })
+          }
+
+          const headingEls = []
+          linkBySlug.forEach((_link, slug) => {
+            const heading = document.getElementById(slug)
+            if (heading) headingEls.push(heading)
+          })
+
+          if (headingEls[0]) setActive(headingEls[0].id)
+
+          const observer = new IntersectionObserver(
+            (entries) => {
+              if (scrollLock) return
+              const visible = entries
+                .filter((entry) => entry.isIntersecting)
+                .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+              if (visible.length > 0) {
+                setActive(visible[0].target.id)
+              }
+            },
+            { rootMargin: "-72px 0px -60% 0px", threshold: [0, 1] },
+          )
+
+          headingEls.forEach((heading) => observer.observe(heading))
+
+          const armScrollUnlock = () => {
+            const QUIET_MS = 200
+            const SAFETY_MS = 2500
+            let released = false
+            let quietTimer = 0
+            const onSettleScroll = () => arm()
+            const release = () => {
+              if (released) return
+              released = true
+              if (quietTimer) clearTimeout(quietTimer)
+              window.removeEventListener("scroll", onSettleScroll)
+              scrollLock = false
+            }
+            const arm = () => {
+              if (released) return
+              if (quietTimer) clearTimeout(quietTimer)
+              quietTimer = window.setTimeout(release, QUIET_MS)
+            }
+            window.addEventListener("scroll", onSettleScroll, { passive: true })
+            arm()
+            window.setTimeout(release, SAFETY_MS)
+          }
+
+          tocLinks.forEach((link) => {
+            link.addEventListener("click", (event) => {
+              const slug = link.getAttribute("data-toc-slug")
+              if (!slug) return
+              const target = document.getElementById(slug)
+              if (!target) return
+              event.preventDefault()
+              scrollLock = true
+              setActive(slug)
+              try { history.replaceState(null, "", `#${slug}`) } catch {}
+              target.scrollIntoView({ behavior: "smooth", block: "start" })
+              armScrollUnlock()
+            })
+          })
+        }
+
+        // ---------------------------------------------------------------
+        // Command palette: open on ⌘K / Ctrl+K, query Pagefind, navigate.
+        // Pagefind index is generated by `pnpm build` at /pagefind/.
+        // In dev mode the index doesn't exist yet - the palette still opens
+        // and shows a "build the site once to enable search" hint.
+        // ---------------------------------------------------------------
+        const cmdkDialog = document.getElementById("cmdk")
+        if (cmdkDialog instanceof HTMLDialogElement) {
+          const input = cmdkDialog.querySelector("[data-cmdk-input]")
+          const resultsEl = cmdkDialog.querySelector("[data-cmdk-results]")
+          const emptyEl = cmdkDialog.querySelector("[data-cmdk-empty]")
+          const statusEl = cmdkDialog.querySelector("[data-cmdk-status]")
+          const triggers = document.querySelectorAll("[data-cmdk-trigger]")
+          const docBase = document.documentElement.dataset.docsBase || ""
+          let pagefind = null
+          let pagefindLoading = null
+          let pagefindError = null
+          let activeIndex = 0
+          let lastQuery = ""
+          let queryToken = 0
+
+          const setStatus = (text) => {
+            if (statusEl) statusEl.textContent = text
+          }
+
+          const loadPagefind = () => {
+            if (pagefind || pagefindLoading) return pagefindLoading
+            const pagefindUrl = docBase.replace(/\/$/, "") + "/pagefind/pagefind.js"
+            pagefindLoading = import(/* @vite-ignore */ pagefindUrl)
+              .then((mod) => {
+                pagefind = mod
+                if (mod.options) mod.options({ baseUrl: docBase || "/" })
+                return mod
+              })
+              .catch((err) => {
+                pagefindError = err
+                return null
+              })
+            return pagefindLoading
+          }
+
+          const openCmdk = () => {
+            if (cmdkDialog.open) return
+            cmdkDialog.removeAttribute("data-closing")
+            cmdkDialog.showModal()
+            // Defer focus so the entrance animation runs cleanly
+            requestAnimationFrame(() => input && input.focus())
+            loadPagefind()
+          }
+
+          const closeCmdk = () => {
+            if (!cmdkDialog.open) return
+            cmdkDialog.setAttribute("data-closing", "true")
+            window.setTimeout(() => {
+              cmdkDialog.close()
+              cmdkDialog.removeAttribute("data-closing")
+              if (input) input.value = ""
+              if (resultsEl && emptyEl) {
+                resultsEl.innerHTML = ""
+                resultsEl.appendChild(emptyEl)
+                emptyEl.hidden = false
+              }
+              setStatus("")
+            }, 150)
+          }
+
+          triggers.forEach((trigger) => trigger.addEventListener("click", openCmdk))
+
+          document.addEventListener("keydown", (event) => {
+            const inEditable = event.target instanceof HTMLElement &&
+              (event.target.tagName === "INPUT" ||
+               event.target.tagName === "TEXTAREA" ||
+               event.target.isContentEditable)
+            const isKey = event.key === "k" || event.key === "K"
+            if (isKey && (event.metaKey || event.ctrlKey)) {
+              event.preventDefault()
+              openCmdk()
+              return
+            }
+            if (event.key === "/" && !inEditable && !cmdkDialog.open) {
+              event.preventDefault()
+              openCmdk()
+            }
+          })
+
+          cmdkDialog.addEventListener("click", (event) => {
+            if (event.target === cmdkDialog) closeCmdk()
+          })
+          cmdkDialog.addEventListener("cancel", (event) => {
+            event.preventDefault()
+            closeCmdk()
+          })
+
+          const resultRows = () => resultsEl ? Array.from(resultsEl.querySelectorAll(".cmdk-result")) : []
+
+          const updateSelection = () => {
+            const rows = resultRows()
+            if (rows.length === 0) return
+            activeIndex = Math.max(0, Math.min(activeIndex, rows.length - 1))
+            rows.forEach((row, i) => {
+              if (i === activeIndex) {
+                row.setAttribute("aria-selected", "true")
+                row.scrollIntoView({ block: "nearest" })
+              } else {
+                row.removeAttribute("aria-selected")
+              }
+            })
+          }
+
+          const renderResults = async (results, query) => {
+            if (!resultsEl || !emptyEl) return
+            resultsEl.innerHTML = ""
+            if (!results || results.length === 0) {
+              const note = document.createElement("div")
+              note.className = "px-4 py-10 text-center text-[0.85rem] text-fg-3"
+              note.textContent = `No results for "${query}".`
+              resultsEl.appendChild(note)
+              setStatus("0 results")
+              return
+            }
+            const top = results.slice(0, 8)
+            const data = await Promise.all(top.map((r) => r.data()))
+            data.forEach((item, i) => {
+              const row = document.createElement("a")
+              row.className = "cmdk-result"
+              row.href = item.url
+              row.dataset.idx = String(i)
+              const eyebrow = item.meta?.title && item.meta.title !== item.title ? item.meta.title : ""
+              row.innerHTML = `
+                ${eyebrow ? `<span class="cmdk-result-eyebrow">${eyebrow}</span>` : ""}
+                <span class="cmdk-result-title">${item.meta?.title || item.url}</span>
+                <span class="cmdk-result-snippet">${item.excerpt}</span>
+              `
+              row.addEventListener("mouseenter", () => {
+                activeIndex = i
+                updateSelection()
+              })
+              resultsEl.appendChild(row)
+            })
+            activeIndex = 0
+            updateSelection()
+            setStatus(`${results.length} result${results.length === 1 ? "" : "s"}`)
+          }
+
+          const runQuery = async (query) => {
+            const token = ++queryToken
+            if (!query) {
+              if (resultsEl && emptyEl) {
+                resultsEl.innerHTML = ""
+                resultsEl.appendChild(emptyEl)
+                emptyEl.hidden = false
+              }
+              setStatus("")
+              return
+            }
+            setStatus("Searching…")
+            const mod = pagefind || (await loadPagefind())
+            if (token !== queryToken) return
+            if (!mod) {
+              if (resultsEl) {
+                resultsEl.innerHTML = ""
+                const note = document.createElement("div")
+                note.className = "px-4 py-10 text-center text-[0.85rem] text-fg-3"
+                note.textContent = pagefindError
+                  ? "Search index not built yet. Run `pnpm build` once to enable search."
+                  : "Loading search index…"
+                resultsEl.appendChild(note)
+              }
+              setStatus("")
+              return
+            }
+            const response = await mod.search(query)
+            if (token !== queryToken) return
+            await renderResults(response.results, query)
+          }
+
+          let debounceTimer = 0
+          input?.addEventListener("input", () => {
+            const query = (input.value || "").trim()
+            lastQuery = query
+            window.clearTimeout(debounceTimer)
+            debounceTimer = window.setTimeout(() => runQuery(query), 120)
+          })
+
+          cmdkDialog.addEventListener("keydown", (event) => {
+            const rows = resultRows()
+            if (event.key === "Escape") {
+              event.preventDefault()
+              closeCmdk()
+              return
+            }
+            if (rows.length === 0) return
+            if (event.key === "ArrowDown") {
+              event.preventDefault()
+              activeIndex = (activeIndex + 1) % rows.length
+              updateSelection()
+            } else if (event.key === "ArrowUp") {
+              event.preventDefault()
+              activeIndex = (activeIndex - 1 + rows.length) % rows.length
+              updateSelection()
+            } else if (event.key === "Enter") {
+              event.preventDefault()
+              const target = rows[activeIndex]
+              if (target instanceof HTMLAnchorElement) target.click()
+            }
+          })
+        }
+
+        if (!window.__xtDocsHello) {
+          window.__xtDocsHello = true
+          const style = "color:#d6469c;font-weight:600;letter-spacing:0.02em;"
+          // eslint-disable-next-line no-console
+          console.log(
+            "%cAitvarasTV%c\nhttps://github.com/infinitel8p/Extreme-InfiniTV",
+            style,
+            "color:inherit;",
+          )
+        }
+      })()
+    </script>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+# App-level command ACL for the desktop build's own custom commands.
+# Creating this file gives the app an ACL manifest, which makes every custom
+# command require an explicit grant (see ipc/authority.rs in the tauri crate) -
+# so every existing desktop-only command must be listed here, not just the
+# sniffer's, or it stops working from the main window.
+
+[[permission]]
+identifier = "allow-desktop-commands"
+description = "Local-origin access to Extreme InfiniTV's desktop-only commands."
+commands.allow = [
+    "compositing_state",
+    "compositing_set",
+    "discord_set_activity",
+    "discord_clear",
+    "discord_disconnect",
+    "launch_external_player",
+    "sandbox_runtime",
+    "install_appx_package",
+    "is_store_build",
+    "resolve_explorer_path",
+    "set_close_to_tray",
+    "updater_check_from",
+    "updater_install",
+    "sniff_page",
+    "cancel_sniff",
+    "register_vod_proxy",
+    "register_vod_proxy_file",
+    "unregister_vod_proxy",
+    "audio_transcode_available",
+    "register_audio_transcode",
+    "unregister_audio_transcode",
+    "vod_audio_remux_available",
+    "register_vod_audio_remux",
+    "unregister_vod_audio_remux",
+]

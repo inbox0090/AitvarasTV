@@ -1,0 +1,133 @@
+---
+import Icon from "./Icon.astro"
+
+interface NavLink {
+  href: string
+  label: string
+  external?: boolean
+}
+
+interface Props {
+  base: string
+  navLinks: NavLink[]
+}
+
+const { base, navLinks } = Astro.props
+---
+
+<header
+  class="sticky top-0 z-30 flex h-(--nav-h) items-center gap-5 border-b border-line-soft bg-[color-mix(in_oklab,var(--color-bg),transparent_20%)] px-5 backdrop-blur-[10px]">
+  <a
+    href={`${base}/`}
+    class="inline-flex items-center gap-2 whitespace-nowrap text-[0.95rem] tracking-[-0.01em] text-fg hover:no-underline">
+    <Icon name="brand" class="h-7 w-7 shrink-0 text-accent" />
+    <span class="inline-flex items-baseline whitespace-nowrap">
+      <span class="font-semibold">AitvarasTV</span><span
+        class="font-extrabold tracking-[0.04em] text-accent ml-[0.05em]"
+        >TV</span
+      >
+      <span class="ml-1.5 text-fg-3 font-normal">docs</span>
+    </span>
+  </a>
+
+  <span class="flex-1"></span>
+
+  <nav class="hidden gap-5 text-[0.88rem] md:flex" aria-label="Site">
+    {
+      navLinks.map((link) => (
+        <a
+          href={link.href}
+          class="text-fg-2 transition-colors duration-150 hover:text-fg hover:no-underline"
+          {...(link.external
+            ? { rel: "noopener", target: "_blank" }
+            : {})}>
+          {link.label}
+          {link.external && <span class="sr-only"> (opens in new tab)</span>}
+        </a>
+      ))
+    }
+  </nav>
+
+  <button
+    type="button"
+    data-cmdk-trigger
+    aria-label="Search documentation"
+    class="inline-grid h-10 w-10 cursor-pointer place-items-center rounded-md border border-transparent bg-transparent text-fg-2 transition-colors duration-150 hover:bg-surface-2 hover:text-fg sm:hidden">
+    <Icon name="search" class="size-4.5" />
+  </button>
+
+  <button
+    type="button"
+    data-cmdk-trigger
+    aria-label="Search documentation"
+    class="hidden sm:inline-flex h-9 items-center gap-2 rounded-md border border-line bg-surface px-3 text-[0.82rem] text-fg-3 transition-colors duration-150 hover:bg-surface-2 hover:text-fg-2 md:w-56 md:pr-1.5">
+    <Icon name="search" class="size-3.5 shrink-0" />
+    <span class="flex-1 text-left">Search the docs</span>
+    <kbd class="hidden md:inline-flex h-5 shrink-0 items-center justify-center rounded bg-surface-2 px-1.5 font-mono text-[0.72rem] text-fg-3">
+      <span class="text-[0.7em] leading-none">⌘</span>K
+    </kbd>
+  </button>
+
+  <button
+    type="button"
+    aria-label="Switch theme"
+    class="theme-toggle inline-grid h-10 w-10 cursor-pointer place-items-center rounded-md border border-transparent bg-transparent text-fg-2 transition-colors duration-150 hover:bg-surface-2 hover:text-fg"
+    data-theme-toggle>
+    <span class="icon-moon"><Icon name="moon" class="size-4" /></span>
+    <span class="icon-sun"><Icon name="sun" class="size-4" /></span>
+  </button>
+
+  <button
+    type="button"
+    aria-controls="sidebar"
+    aria-expanded="false"
+    aria-label="Open menu"
+    class="inline-grid h-10 w-10 cursor-pointer place-items-center rounded-md border border-transparent bg-transparent text-fg-2 transition-colors duration-150 hover:bg-surface-2 hover:text-fg md:hidden"
+    data-menu-toggle>
+    <Icon name="menu" class="size-4.5" />
+  </button>
+</header>
+
+<style>
+  .theme-toggle {
+    position: relative;
+  }
+
+  .theme-toggle .icon-moon,
+  .theme-toggle .icon-sun {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    transform: scale(0.55) rotate(-40deg);
+    transition:
+      opacity 200ms var(--ease-out-quart),
+      transform 280ms var(--ease-out-quart);
+  }
+
+  :global([data-theme="dark"]) .theme-toggle .icon-sun,
+  :global([data-theme="light"]) .theme-toggle .icon-moon,
+  :global(:root:not([data-theme])) .theme-toggle .icon-moon {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme])) .theme-toggle .icon-moon {
+      opacity: 0;
+      transform: scale(0.55) rotate(-40deg);
+    }
+    :global(:root:not([data-theme])) .theme-toggle .icon-sun {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle .icon-moon,
+    .theme-toggle .icon-sun {
+      transition: none;
+    }
+  }
+</style>

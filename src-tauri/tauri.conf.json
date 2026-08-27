@@ -1,0 +1,72 @@
+{
+  "productName": "Extreme InfiniTV",
+  "mainBinaryName": "extreme-infinitv",
+  "version": "1.8.0",
+  "identifier": "com.infinitel8p.xtream",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:4321",
+    "beforeDevCommand": "node ./src/scripts/ensure-ffmpeg-sidecar.mjs && pnpm run dev",
+    "beforeBuildCommand": "node ./src/scripts/ensure-ffmpeg-sidecar.mjs && pnpm run build"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "title": "Extreme InfiniTV",
+        "width": 1300,
+        "height": 850,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "focus": true,
+        "visible": false,
+        "decorations": false,
+        "dragDropEnabled": false,
+        "backgroundColor": "#0b0f14"
+      }
+    ],
+    "security": {
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": [
+          "$DOWNLOAD/**",
+          "$VIDEO/**",
+          "$HOME/**",
+          "$APPDATA/**",
+          "$APPLOCALDATA/**"
+        ]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "publisher": "InfiniteL8p",
+    "category": "public.app-category.video",
+    "copyright": "© 2025 Ludovico Ferrara",
+    "createUpdaterArtifacts": true,
+    "android": {
+      "versionCode": 100800090
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  },
+
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE2NERBRENFQzczNDZENjQKUldSa2JUVEh6cTFOcHJzVi9PYTB0TWZFYUZEV3RrdW5LRk56cmhDcjdxQlJ1QldjbXAwNEVxWHQK",
+      "endpoints": [
+        "https://github.com/infinitel8p/Extreme-InfiniTV/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}

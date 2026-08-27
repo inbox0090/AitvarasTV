@@ -1,0 +1,135 @@
+---
+import Icon from "./Icon.astro"
+---
+
+<dialog
+  id="cmdk"
+  class="cmdk fixed inset-0 z-50 m-0 size-full max-h-none max-w-none border-0 bg-transparent p-0 outline-none open:grid items-start justify-items-center backdrop:bg-black/45"
+  aria-label="Search documentation"
+>
+  <div
+    class="cmdk-panel mt-[12vh] w-[min(640px,calc(100vw-2rem))] origin-top overflow-hidden rounded-2xl border border-line bg-surface text-fg shadow-(--shadow-drawer)"
+    role="document"
+  >
+    <div class="flex items-center gap-3 border-b border-line-soft px-4 py-3">
+      <Icon name="search" class="size-4 text-fg-3" />
+      <input
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Search the docs…"
+        class="cmdk-input w-full bg-transparent text-[0.95rem] text-fg outline-none placeholder:text-fg-3"
+        data-cmdk-input
+      />
+      <kbd class="hidden md:inline-flex h-5 shrink-0 items-center justify-center rounded bg-surface-2 px-1.5 font-mono text-[0.72rem] text-fg-3">esc</kbd>
+    </div>
+
+    <div class="cmdk-results max-h-[60vh] overflow-y-auto" data-cmdk-results>
+      <div class="cmdk-empty px-4 py-10 text-center text-[0.85rem] text-fg-3" data-cmdk-empty>
+        Type to search. Use <kbd class="mx-0.5 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded bg-surface-2 px-1 font-mono text-[0.72rem] text-fg-3">↑</kbd> <kbd class="mx-0.5 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded bg-surface-2 px-1 font-mono text-[0.72rem] text-fg-3">↓</kbd> to navigate, <kbd class="mx-0.5 inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded bg-surface-2 px-1 font-mono text-[0.72rem] text-fg-3">↵</kbd> to open.
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between border-t border-line-soft px-4 py-2 text-[0.7rem] text-fg-3">
+      <span class="flex items-center gap-2">
+        <span>Search by</span>
+        <span class="font-medium text-fg-2">Pagefind</span>
+      </span>
+      <span class="cmdk-status" data-cmdk-status></span>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .cmdk[open] {
+    display: grid;
+  }
+  .cmdk:not([open]) {
+    display: none;
+  }
+  .cmdk-panel {
+    animation: cmdk-in 220ms var(--ease-out-quart);
+  }
+  .cmdk[data-closing="true"] .cmdk-panel {
+    animation: cmdk-out 160ms var(--ease-out-quart);
+  }
+  .cmdk[data-closing="true"]::backdrop {
+    animation: cmdk-backdrop-out 160ms var(--ease-out-quart);
+  }
+  .cmdk::backdrop {
+    animation: cmdk-backdrop-in 220ms var(--ease-out-quart);
+  }
+  @keyframes cmdk-in {
+    from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes cmdk-out {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to   { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  }
+  @keyframes cmdk-backdrop-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes cmdk-backdrop-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cmdk-panel,
+    .cmdk::backdrop,
+    .cmdk[data-closing="true"] .cmdk-panel,
+    .cmdk[data-closing="true"]::backdrop {
+      animation: none;
+    }
+  }
+
+  :global(.cmdk-result) {
+    display: block;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-line-soft);
+    text-decoration: none;
+    color: var(--color-fg);
+    cursor: pointer;
+    transition: background-color 120ms var(--ease-out-quart);
+  }
+  :global(.cmdk-result:last-child) {
+    border-bottom: 0;
+  }
+  :global(.cmdk-result[aria-selected="true"]) {
+    background: var(--color-surface-2);
+  }
+  :global(.cmdk-result-eyebrow) {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-fg-3);
+    margin-bottom: 0.2rem;
+  }
+  :global(.cmdk-result-title) {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-fg);
+    margin-bottom: 0.15rem;
+  }
+  :global(.cmdk-result-snippet) {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--color-fg-2);
+    line-height: 1.45;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  :global(.cmdk-result mark) {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    padding: 0 0.1em;
+    border-radius: 2px;
+  }
+</style>

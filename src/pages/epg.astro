@@ -1,0 +1,312 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import CategoryPickerDialog from "@/components/CategoryPickerDialog.astro";
+import SearchInput from "@/components/SearchInput.astro";
+import { IconRefresh, IconArrowLeft, IconChevronDown, IconChevronLeft, IconChevronRight, IconClockHour3, IconLink } from "@tabler/icons-svelte";
+---
+
+<Layout pageTitle="EPG" showVersion={false}>
+	<main
+		class="w-full max-w-480 mx-auto px-4 md:px-6 lg:px-8 pt-4 lg:pt-6 md:landscape:pt-6 pb-6
+			flex flex-col gap-3 flex-1 min-h-0">
+
+		<header class="route-hero shrink-0">
+			<h1 data-i18n="page.epg.title" class="route-hero__title">Programme guide</h1>
+			<p
+				id="epg-title"
+				class="route-hero__sub truncate min-w-0">
+				What's on right now and what's coming up across the active playlist's channels.
+			</p>
+		</header>
+
+		<!-- Toolbar -->
+		<section class="flex items-center gap-3 shrink-0 flex-wrap">
+			<a
+				href="/livetv"
+				aria-label="Back to Live TV"
+				data-i18n-attr="aria-label:page.livetv.title"
+				class="rounded-xl border border-line bg-surface px-3 py-2 text-sm text-fg-2 inline-flex items-center gap-2
+					hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+				<IconArrowLeft aria-hidden="true" stroke={2} class="size-4" />
+				<span data-i18n="page.livetv.title">Live TV</span>
+			</a>
+			<button
+				id="epg-category-picker-trigger"
+				type="button"
+				aria-haspopup="dialog"
+				aria-controls="epg-category-picker-dialog"
+				class="rounded-xl border border-line bg-surface px-3 py-2 text-sm flex items-center gap-2 text-left max-w-[18rem] min-w-0
+					hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+				<span data-i18n="list.category" class="text-fg-3 shrink-0">Category</span>
+				<span
+					id="epg-category-picker-label"
+					data-i18n="list.allCategories"
+					class="text-fg truncate flex-1">All categories</span>
+				<IconChevronDown
+					aria-hidden="true"
+					stroke={2}
+					class="size-4 text-fg-3 shrink-0"
+				/>
+			</button>
+			<button
+				id="epg-prev-day"
+				type="button"
+				aria-label="Previous day"
+				title="Previous day"
+				data-i18n-attr="aria-label:epg.previousDay;title:epg.previousDay"
+				class="rounded-xl border border-line bg-surface min-h-11 min-w-11 text-fg-2 inline-flex items-center justify-center shrink-0
+					hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+				<IconChevronLeft aria-hidden="true" stroke={2} class="size-4" />
+			</button>
+			<span
+				id="epg-day-label"
+				aria-live="polite"
+				class="text-xs text-fg-3 tabular-nums whitespace-nowrap px-1 shrink-0">
+				Today
+			</span>
+			<button
+				id="epg-next-day"
+				type="button"
+				aria-label="Next day"
+				title="Next day"
+				data-i18n-attr="aria-label:epg.nextDay;title:epg.nextDay"
+				class="rounded-xl border border-line bg-surface min-h-11 min-w-11 text-fg-2 inline-flex items-center justify-center shrink-0
+					hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+				<IconChevronRight aria-hidden="true" stroke={2} class="size-4" />
+			</button>
+			<button
+				id="epg-now"
+				type="button"
+				aria-label="Snap timeline to now"
+				title="Snap to now"
+				data-i18n-attr="aria-label:epg.now;title:epg.now"
+				class="rounded-xl border border-line bg-surface min-h-11 min-w-11 px-2 sm:px-3 text-sm text-fg-2 inline-flex items-center justify-center gap-2 shrink-0
+					hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+				<IconClockHour3 aria-hidden="true" stroke={2} class="size-4" />
+				<span data-i18n="epg.now" class="hidden sm:inline">Now</span>
+			</button>
+			<button
+				id="epg-refresh"
+				type="button"
+				aria-label="Refresh EPG"
+				data-i18n-attr="aria-label:downloads.refresh"
+				class="rounded-xl border border-line bg-surface min-h-11 min-w-11 text-fg-2 inline-flex items-center justify-center
+					hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+				<IconRefresh aria-hidden="true" stroke={2} class="size-4" />
+			</button>
+			<button
+				id="epg-map-open"
+				type="button"
+				aria-haspopup="dialog"
+				aria-controls="epg-map-dialog"
+				aria-label="Manage EPG channel mapping"
+				title="Manage EPG channel mapping"
+				data-i18n-attr="aria-label:epg.map.openDialog;title:epg.map.openDialog"
+				class="rounded-xl border border-line bg-surface p-2 sm:px-3 text-sm text-fg-2 inline-flex items-center gap-2 shrink-0
+					hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+				<IconLink aria-hidden="true" stroke={2} class="size-4" />
+				<span data-i18n="epg.map.openDialog" class="hidden sm:inline">Map channels</span>
+			</button>
+		</section>
+
+		<!-- Status message (skeleton / error text) -->
+		<div
+			id="epg-status"
+			class="hidden rounded-2xl border border-line bg-surface px-4 py-6 text-fg-2 text-sm">
+			Loading…
+		</div>
+
+		<!-- Grid container -->
+		<section
+			id="epg-grid"
+			class="hidden flex-1 min-h-0 overflow-auto custom-scroll
+				rounded-2xl border border-line bg-bg">
+
+			<!-- Time header -->
+			<div
+				class="sticky top-0 z-30 flex items-stretch border-b border-line bg-bg/95 backdrop-blur-sm">
+				<div
+					class="shrink-0 sticky left-0 z-30 bg-bg border-r border-line"
+					style="width: 240px; height: 40px;">
+				</div>
+				<div
+					id="epg-time-header-inner"
+					class="relative shrink-0"
+					style="height: 40px;">
+				</div>
+			</div>
+
+			<!-- Body -->
+			<div id="epg-body" class="relative">
+			</div>
+		</section>
+
+		<CategoryPickerDialog idPrefix="epg-category-picker" showSyncToggle={true} />
+
+		<!-- EPG channel-mapping dialog (Jellyfin-style manual map) -->
+		<dialog
+			id="epg-map-dialog"
+			aria-labelledby="epg-map-title"
+			class="fixed inset-0 m-auto rounded-2xl border border-line bg-surface text-fg p-0
+				w-[min(46rem,calc(100vw-2rem))] h-[min(85dvh,46rem)]
+				backdrop:bg-black/60">
+			<div class="flex flex-col h-full p-4 gap-3">
+				<div class="flex items-center justify-between gap-3 shrink-0">
+					<div class="flex flex-col gap-0.5 min-w-0">
+						<h2 id="epg-map-title" data-i18n="epg.map.title" class="text-base font-semibold">
+							Map channels to EPG
+						</h2>
+						<span data-i18n="epg.map.help" class="text-xs text-fg-3 leading-relaxed">
+							Each channel below is matched to an EPG entry by tvg-id. Use override to point a channel at a different EPG channel manually.
+						</span>
+					</div>
+					<button
+						id="epg-map-close"
+						type="button"
+						data-i18n="common.close"
+						class="rounded-lg border border-line px-3 py-1.5 text-xs text-fg-2 shrink-0
+							hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent">
+						Close
+					</button>
+				</div>
+
+				<SearchInput
+					id="epg-map-search"
+					label="Search channels"
+					placeholder="Search channels…"
+					labelKey="epg.map.search"
+					placeholderKey="epg.map.searchPlaceholder"
+				/>
+
+				<div
+					id="epg-map-filter"
+					role="radiogroup"
+					aria-label="Channel filter"
+					data-i18n-attr="aria-label:epg.map.filterAria"
+					class="flex p-0.5 rounded-lg border border-line bg-surface-2 text-xs shrink-0">
+					<button
+						type="button"
+						role="radio"
+						aria-checked="true"
+						data-filter="all"
+						data-i18n="epg.map.filterAll"
+						class="flex-1 rounded-md px-3 py-1.5 font-medium transition-colors text-fg-2
+							hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+							aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-sm">
+						All
+					</button>
+					<button
+						type="button"
+						role="radio"
+						aria-checked="false"
+						data-filter="unmapped"
+						data-i18n="epg.map.filterUnmapped"
+						class="flex-1 rounded-md px-3 py-1.5 font-medium transition-colors text-fg-2
+							hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+							aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-sm">
+						Unmapped
+					</button>
+					<button
+						type="button"
+						role="radio"
+						aria-checked="false"
+						data-filter="auto"
+						data-i18n="epg.map.filterAuto"
+						class="flex-1 rounded-md px-3 py-1.5 font-medium transition-colors text-fg-2
+							hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+							aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-sm">
+						Auto
+					</button>
+					<button
+						type="button"
+						role="radio"
+						aria-checked="false"
+						data-filter="overridden"
+						data-i18n="epg.map.filterOverridden"
+						class="flex-1 rounded-md px-3 py-1.5 font-medium transition-colors text-fg-2
+							hover:text-fg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent
+							aria-checked:bg-surface aria-checked:text-fg aria-checked:shadow-sm">
+						Overridden
+					</button>
+				</div>
+
+				<div
+					id="epg-map-list"
+					class="relative flex-1 min-h-0 overflow-auto custom-scroll
+						rounded-xl border border-line bg-bg">
+				</div>
+
+				<div
+					id="epg-map-status"
+					class="px-2 text-xs text-fg-3 tabular-nums shrink-0">
+				</div>
+			</div>
+		</dialog>
+
+		<!-- EPG tvg-id picker (opens from inside the mapping dialog) -->
+		<dialog
+			id="epg-pick-dialog"
+			aria-labelledby="epg-pick-title"
+			class="fixed inset-0 m-auto rounded-2xl border border-line bg-surface text-fg p-0
+				w-[min(40rem,calc(100vw-2rem))] h-[min(80dvh,42rem)]
+				backdrop:bg-black/60">
+			<div class="flex flex-col h-full p-4 gap-3">
+				<div class="flex items-center justify-between gap-3 shrink-0">
+					<div class="flex flex-col gap-0.5 min-w-0">
+						<h2 id="epg-pick-title" data-i18n="epg.map.pickerTitle" class="text-base font-semibold">
+							Pick an EPG channel
+						</h2>
+						<span data-i18n="epg.map.pickerHelp" class="text-xs text-fg-3 leading-relaxed">
+							Choose which XMLTV channel supplies programmes for this entry.
+						</span>
+					</div>
+					<button
+						id="epg-pick-close"
+						type="button"
+						data-i18n="common.close"
+						class="rounded-lg border border-line px-3 py-1.5 text-xs text-fg-2 shrink-0
+							hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent">
+						Close
+					</button>
+				</div>
+
+				<SearchInput
+					id="epg-pick-search"
+					label="Search EPG channels"
+					placeholder="Search by name or tvg-id…"
+					labelKey="epg.map.pickerSearch"
+					placeholderKey="epg.map.pickerSearchPlaceholder"
+				/>
+
+				<div class="flex items-center gap-3 rounded-lg border border-line bg-surface-2 px-3 py-2 text-xs text-fg-3 shrink-0">
+					<span id="epg-pick-current" class="truncate min-w-0 flex-1"></span>
+					<button
+						id="epg-pick-clear"
+						type="button"
+						data-i18n="epg.map.clearOverride"
+						class="shrink-0 inline-flex items-center gap-1.5 rounded-md border border-line bg-bg px-2.5 py-1 text-xs text-fg-2
+							hover:bg-surface hover:text-fg focus-visible:bg-surface focus-visible:border-accent transition-colors
+							disabled:opacity-50 disabled:cursor-not-allowed">
+						Clear override
+					</button>
+				</div>
+
+				<div
+					id="epg-pick-list"
+					class="relative flex-1 min-h-0 overflow-auto custom-scroll
+						rounded-xl border border-line bg-bg">
+				</div>
+
+				<div
+					id="epg-pick-status"
+					class="px-2 text-xs text-fg-3 tabular-nums shrink-0">
+				</div>
+			</div>
+		</dialog>
+	</main>
+
+	<script>
+		import "../scripts/epg/epg.ts";
+		import "../scripts/epg/mapping.ts";
+	</script>
+</Layout>

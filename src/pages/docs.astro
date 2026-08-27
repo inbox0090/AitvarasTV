@@ -1,0 +1,121 @@
+---
+import Layout from "@/layouts/Layout.astro"
+---
+
+<Layout pageTitle="Documentation" showVersion={false}>
+  <main class="flex flex-1 min-h-0 flex-col">
+    <noscript>
+      <p class="m-4 text-sm text-fg-2">
+        Documentation requires JavaScript and a network connection. Open it directly at
+        <a class="underline" href="https://infinitel8p.github.io/Extreme-InfiniTV/" target="_blank" rel="noopener">infinitel8p.github.io/Extreme-InfiniTV</a>.
+      </p>
+    </noscript>
+    <div id="xt-docs-skeleton" class="xt-docs-skeleton grid flex-1 place-items-center text-fg-3 text-sm">
+      <span data-i18n="docs.loading">Loading documentation…</span>
+    </div>
+    <iframe
+      id="xt-docs-frame"
+      title="AitvarasTV documentation"
+      data-i18n-attr="title:docs.frameTitle"
+      class="hidden flex-1 w-full border-0 bg-bg"
+      referrerpolicy="no-referrer"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+    ></iframe>
+  </main>
+
+  <script is:inline>
+    (() => {
+      const DOCS_BASE = "https://infinitel8p.github.io/Extreme-InfiniTV"
+      const DOCS_ORIGIN = "https://infinitel8p.github.io"
+      const iframe = document.getElementById("xt-docs-frame")
+      const skeleton = document.getElementById("xt-docs-skeleton")
+      if (!(iframe instanceof HTMLIFrameElement)) return
+
+      const preconnect = document.createElement("link")
+      preconnect.rel = "preconnect"
+      preconnect.href = DOCS_ORIGIN
+      preconnect.crossOrigin = ""
+      document.head.appendChild(preconnect)
+
+      const sanitizePath = (raw) => {
+        if (!raw) return ""
+        const cleaned = raw.replace(/[^a-zA-Z0-9/_-]/g, "")
+        const noLead = cleaned.replace(/^\/+/, "")
+        return noLead.endsWith("/") || noLead === "" ? noLead : noLead + "/"
+      }
+
+      const resolveTheme = () => {
+        const stored = localStorage.getItem("xt_theme") || "system"
+        if (stored === "light" || stored === "dark") return stored
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      }
+
+      const ACCENT_PRESETS = ["fuchsia", "rose", "ember", "emerald", "cyan", "blue", "violet"]
+      const resolveAccent = () => {
+        const stored = localStorage.getItem("xt_accent") || "fuchsia"
+        return ACCENT_PRESETS.includes(stored) ? stored : "fuchsia"
+      }
+
+      const buildSrc = () => {
+        const params = new URLSearchParams(window.location.search)
+        const path = sanitizePath(params.get("p") || "")
+        const url = new URL(`${DOCS_BASE}/${path}`)
+        url.searchParams.set("embed", "1")
+        url.searchParams.set("theme", resolveTheme())
+        const accent = resolveAccent()
+        if (accent !== "fuchsia") url.searchParams.set("accent", accent)
+        return url.toString()
+      }
+
+      iframe.addEventListener("load", () => {
+        if (skeleton) skeleton.classList.add("hidden")
+        iframe.classList.remove("hidden")
+      })
+
+      iframe.src = buildSrc()
+
+      const pushTheme = () => {
+        try {
+          iframe.contentWindow?.postMessage(
+            { type: "xt-docs:theme", theme: resolveTheme() },
+            DOCS_ORIGIN
+          )
+        } catch {}
+      }
+      const pushAccent = () => {
+        try {
+          iframe.contentWindow?.postMessage(
+            { type: "xt-docs:accent", accent: resolveAccent() },
+            DOCS_ORIGIN
+          )
+        } catch {}
+      }
+      window.addEventListener("storage", (event) => {
+        if (event.key === "xt_theme") pushTheme()
+        if (event.key === "xt_accent") pushAccent()
+      })
+      const systemMql = window.matchMedia("(prefers-color-scheme: dark)")
+      systemMql.addEventListener?.("change", pushTheme)
+    })()
+  </script>
+</Layout>
+
+<style>
+  #xt-docs-frame {
+    color-scheme: light dark;
+  }
+  .xt-docs-skeleton {
+    animation: xt-docs-skeleton-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes xt-docs-skeleton-pulse {
+    0%, 100% { opacity: 0.55; }
+    50%      { opacity: 0.9; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .xt-docs-skeleton { animation: none; opacity: 0.7; }
+  }
+  :root[data-perf-mode="on"] .xt-docs-skeleton {
+    animation: none;
+    opacity: 0.7;
+  }
+</style>

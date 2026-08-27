@@ -1,0 +1,1797 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { IconArrowLeft, IconChevronDown, IconPlus } from "@tabler/icons-svelte";
+---
+
+<Layout pageTitle="Add playlist" showVersion={false}>
+	<main
+		class="mx-auto px-5 sm:px-6 lg:px-8 pb-16 pt-4 lg:pt-6 max-w-480 w-full">
+
+		<div>
+
+		<header class="route-hero mb-10">
+			<a
+				href="/"
+				class="self-start inline-flex items-center gap-1.5 text-sm text-fg-3 hover:text-fg focus-visible:text-fg transition-colors min-h-10 -ml-1 mb-2">
+				<IconArrowLeft class="h-4 w-4" /> <span data-i18n="common.back">Back</span>
+			</a>
+			<h1
+				id="page-title"
+				data-i18n="login.title.add"
+				class="route-hero__title">
+				Add a playlist
+			</h1>
+			<p
+				id="page-subtitle"
+				data-i18n="login.subtitle"
+				class="route-hero__sub">
+				Connect an Xtream provider, or paste an M3U/M3U8 playlist URL.
+			</p>
+		</header>
+
+
+		<!-- Method picker: clean segmented control -->
+		<div
+			role="tablist"
+			aria-label="Playlist type" data-i18n-attr="aria-label:aria.playlistType"
+			class="grid grid-cols-3 gap-1 p-1 rounded-xl border border-line bg-surface mb-10">
+			<button
+				id="tab-xtream"
+				type="button"
+				role="tab"
+				class="flex flex-col items-center justify-center text-center px-3 py-2 rounded-lg min-h-12 transition-colors disabled:cursor-not-allowed disabled:opacity-40">
+				<span data-i18n="login.tab.subscription" class="text-sm font-medium leading-tight">
+					I have a subscription
+				</span>
+				<span
+					data-i18n="login.tab.subscription.sub"
+					class="mt-0.5 text-label font-medium uppercase tracking-wider opacity-70">
+					Xtream Codes
+				</span>
+			</button>
+			<button
+				id="tab-m3u"
+				type="button"
+				role="tab"
+				class="flex flex-col items-center justify-center text-center px-3 py-2 rounded-lg min-h-12 transition-colors disabled:cursor-not-allowed disabled:opacity-40">
+				<span data-i18n="login.tab.url" class="text-sm font-medium leading-tight">
+					I have a playlist URL
+				</span>
+				<span
+					data-i18n="login.tab.url.sub"
+					class="mt-0.5 text-label font-medium uppercase tracking-wider opacity-70">
+					M3U / M3U8
+				</span>
+			</button>
+			<button
+				id="tab-local"
+				type="button"
+				role="tab"
+				class="flex flex-col items-center justify-center text-center px-3 py-2 rounded-lg min-h-12 transition-colors disabled:cursor-not-allowed disabled:opacity-40">
+				<span data-i18n="login.tab.local" class="text-sm font-medium leading-tight">
+					I have a playlist file
+				</span>
+				<span
+					data-i18n="login.tab.local.sub"
+					class="mt-0.5 text-label font-medium uppercase tracking-wider opacity-70">
+					.m3u / .m3u8
+				</span>
+			</button>
+		</div>
+
+		<form
+			id="playlist-form"
+			class="flex flex-col gap-6"
+			autocomplete="off">
+			<label class="flex flex-col gap-2">
+				<span
+					data-i18n="login.field.title"
+					class="text-xs font-semibold tracking-wider uppercase text-fg-3">
+					Title
+				</span>
+				<input
+					id="title"
+					type="text"
+					placeholder="e.g. Living room TV"
+					data-i18n-attr="placeholder:login.field.title.placeholder"
+					class="field-input"
+				/>
+				<span data-i18n="login.field.title.helper" class="text-xs text-fg-3 leading-relaxed"
+					>Optional name for this playlist.</span
+				>
+			</label>
+
+			<!-- Emoji + accent personalization; applied while this playlist is active. -->
+			<div class="grid grid-cols-1 sm:grid-cols-[8rem_1fr] gap-6">
+				<label class="flex flex-col gap-2 min-w-0">
+					<span
+						data-i18n="login.field.emoji"
+						class="text-xs font-semibold tracking-wider uppercase text-fg-3">
+						Emoji
+					</span>
+					<input
+						id="playlistEmoji"
+						type="text"
+						maxlength="8"
+						placeholder="🏠"
+						class="field-input w-16 text-center text-lg"
+					/>
+					<span data-i18n="login.field.emoji.helper" class="text-xs text-fg-3 leading-relaxed">
+						Shown instead of the type badge.
+					</span>
+				</label>
+
+				<div class="flex flex-col gap-2">
+					<span
+						data-i18n="login.field.accent"
+						class="text-xs font-semibold tracking-wider uppercase text-fg-3">
+						Accent color
+					</span>
+					<div
+						id="playlistAccent"
+						class="flex flex-wrap gap-2"
+						role="radiogroup"
+						data-i18n-attr="aria-label:login.field.accent"
+						aria-label="Accent color">
+						<button type="button" role="radio" data-accent-value="" aria-checked="true" data-i18n-attr="title:login.field.accent.default;aria-label:login.field.accent.default" title="App default" aria-label="App default" class="accent-btn btn group size-11 p-0" style="--swatch: var(--color-fg-3)">
+							<span class="size-5 rounded-full bg-(--swatch) group-aria-checked:ring-2 group-aria-checked:ring-(--swatch) group-aria-checked:ring-offset-2 group-aria-checked:ring-offset-surface" aria-hidden="true"></span>
+						</button>
+						<button type="button" role="radio" data-accent-value="fuchsia" aria-checked="false" data-i18n-attr="title:settings.accent.fuchsia;aria-label:settings.accent.fuchsia" title="Fuchsia" aria-label="Fuchsia" class="accent-btn btn group size-11 p-0" style="--swatch: var(--accent-swatch-fuchsia)">
+							<span class="size-5 rounded-full bg-(--swatch) group-aria-checked:ring-2 group-aria-checked:ring-(--swatch) group-aria-checked:ring-offset-2 group-aria-checked:ring-offset-surface" aria-hidden="true"></span>
+						</button>
+						<button type="button" role="radio" data-accent-value="rose" aria-checked="false" data-i18n-attr="title:settings.accent.rose;aria-label:settings.accent.rose" title="Rose" aria-label="Rose" class="accent-btn btn group size-11 p-0" style="--swatch: var(--accent-swatch-rose)">
+							<span class="size-5 rounded-full bg-(--swatch) group-aria-checked:ring-2 group-aria-checked:ring-(--swatch) group-aria-checked:ring-offset-2 group-aria-checked:ring-offset-surface" aria-hidden="true"></span>
+						</button>
+						<button type="button" role="radio" data-accent-value="ember" aria-checked="false" data-i18n-attr="title:settings.accent.ember;aria-label:settings.accent.ember" title="Ember" aria-label="Ember" class="accent-btn btn group size-11 p-0" style="--swatch: var(--accent-swatch-ember)">
+							<span class="size-5 rounded-full bg-(--swatch) group-aria-checked:ring-2 group-aria-checked:ring-(--swatch) group-aria-checked:ring-offset-2 group-aria-checked:ring-offset-surface" aria-hidden="true"></span>
+						</button>
+						<button type="button" role="radio" data-accent-value="emerald" aria-checked="false" data-i18n-attr="title:settings.accent.emerald;aria-label:settings.accent.emerald" title="Emerald" aria-label="Emerald" class="accent-btn btn group size-11 p-0" style="--swatch: var(--accent-swatch-emerald)">
+							<span class="size-5 rounded-full bg-(--swatch) group-aria-checked:ring-2 group-aria-checked:ring-(--swatch) group-aria-checked:ring-offset-2 group-aria-checked:ring-offset-surface" aria-hidden="true"></span>
+						</button>
+						<button type="button" role="radio" data-accent-value="cyan" aria-checked="false" data-i18n-attr="title:settings.accent.cyan;aria-label:settings.accent.cyan" title="Cyan" aria-label="Cyan" class="accent-btn btn group size-11 p-0" style="--swatch: var(--accent-swatch-cyan)">
+							<span class="size-5 rounded-full bg-(--swatch) group-aria-checked:ring-2 group-aria-checked:ring-(--swatch) group-aria-checked:ring-offset-2 group-aria-checked:ring-offset-surface" aria-hidden="true"></span>
+						</button>
+						<button type="button" role="radio" data-accent-value="blue" aria-checked="false" data-i18n-attr="title:settings.accent.blue;aria-label:settings.accent.blue" title="Blue" aria-label="Blue" class="accent-btn btn group size-11 p-0" style="--swatch: var(--accent-swatch-blue)">
+							<span class="size-5 rounded-full bg-(--swatch) group-aria-checked:ring-2 group-aria-checked:ring-(--swatch) group-aria-checked:ring-offset-2 group-aria-checked:ring-offset-surface" aria-hidden="true"></span>
+						</button>
+						<button type="button" role="radio" data-accent-value="violet" aria-checked="false" data-i18n-attr="title:settings.accent.violet;aria-label:settings.accent.violet" title="Violet" aria-label="Violet" class="accent-btn btn group size-11 p-0" style="--swatch: var(--accent-swatch-violet)">
+							<span class="size-5 rounded-full bg-(--swatch) group-aria-checked:ring-2 group-aria-checked:ring-(--swatch) group-aria-checked:ring-offset-2 group-aria-checked:ring-offset-surface" aria-hidden="true"></span>
+						</button>
+					</div>
+					<span data-i18n="login.field.accent.helper" class="text-xs text-fg-3 leading-relaxed">
+						Overrides the app's accent color while this playlist is active.
+					</span>
+				</div>
+			</div>
+
+			<!-- Xtream fields -->
+			<div id="xtream-fields" class="flex flex-col gap-6">
+				<label class="flex flex-col gap-2">
+					<span
+						data-i18n="login.field.serverUrl"
+						class="text-xs font-semibold tracking-wider uppercase text-fg-3">
+						Server URL
+					</span>
+					<input
+						id="serverUrl"
+						type="text"
+						placeholder="example.com:8080"
+						class="field-input"
+					/>
+					<span data-i18n="login.field.serverUrl.helper" class="text-xs text-fg-3 leading-relaxed">
+						Paste a full player_api.php URL to auto-fill the fields below, or enter just the hostname.
+					</span>
+				</label>
+
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+					<label class="flex flex-col gap-2">
+						<span
+							data-i18n="login.field.username"
+							class="text-xs font-semibold tracking-wider uppercase text-fg-3">
+							Username
+						</span>
+						<input
+							id="username"
+							type="text"
+							autocapitalize="off"
+							spellcheck="false"
+							class="field-input"
+						/>
+					</label>
+					<label class="flex flex-col gap-2">
+						<span
+							data-i18n="login.field.password"
+							class="text-xs font-semibold tracking-wider uppercase text-fg-3">
+							Password
+						</span>
+						<input
+							id="password"
+							type="password"
+							class="field-input"
+						/>
+					</label>
+				</div>
+
+				<!-- Backup domains (Xtream only). Same disclosure pattern as the
+				     EPG sources block below so both advanced sections feel like
+				     one family. -->
+				<details id="mirrors-section" class="group rounded-xl border border-line bg-surface">
+					<summary
+						class="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer
+							hover:bg-surface-2 focus-visible:bg-surface-2 transition-colors rounded-xl
+							list-none min-h-12">
+						<span class="flex flex-col gap-0.5 min-w-0">
+							<span data-i18n="login.mirrors.toggle" class="text-sm font-medium text-fg">
+								Backup domains (optional)
+							</span>
+							<span
+								data-i18n="login.mirrors.helper"
+								class="text-xs text-fg-3 leading-relaxed">
+								Providers often give a couple of domains. We'll fall back automatically when the primary stops responding.
+							</span>
+						</span>
+						<IconChevronDown
+							aria-hidden="true"
+							stroke={2}
+							class="size-4 shrink-0 text-fg-3 transition-[transform,color] duration-200
+								group-open:rotate-180 group-open:text-accent"
+						/>
+					</summary>
+
+					<div class="flex flex-col gap-3 px-4 pb-4 pt-1">
+						<ul id="mirrorsList" class="flex flex-col gap-3"></ul>
+						<button
+							id="mirrorsAddBtn"
+							type="button"
+							class="self-start inline-flex items-center gap-1.5 rounded-lg border border-line bg-bg px-3 py-1.5 text-sm text-fg-2
+								hover:bg-surface-2 hover:text-fg focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+							<IconPlus aria-hidden="true" stroke={2} class="size-3.5" />
+							<span data-i18n="login.mirrors.add">Add backup domain</span>
+						</button>
+					</div>
+				</details>
+
+				<!-- Advanced: live stream format (Xtream only). Most providers
+				     accept either; Dispatcharr only serves .ts today. -->
+				<details id="xtream-advanced" class="group rounded-xl border border-line bg-surface">
+					<summary
+						class="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer
+							hover:bg-surface-2 focus-visible:bg-surface-2 transition-colors rounded-xl
+							list-none min-h-12">
+						<span class="flex flex-col gap-0.5 min-w-0">
+							<span data-i18n="login.advanced.toggle" class="text-sm font-medium text-fg">
+								Advanced playback (optional)
+							</span>
+							<span
+								data-i18n="login.advanced.helper"
+								class="text-xs text-fg-3 leading-relaxed">
+								Tweak how stream URLs are built. Only change if your provider needs it.
+							</span>
+						</span>
+						<IconChevronDown
+							aria-hidden="true"
+							stroke={2}
+							class="size-4 shrink-0 text-fg-3 transition-[transform,color] duration-200
+								group-open:rotate-180 group-open:text-accent"
+						/>
+					</summary>
+
+					<div class="flex flex-col gap-3 px-4 pb-4 pt-1">
+						<label class="flex flex-col gap-2">
+							<span
+								data-i18n="login.field.liveContainer"
+								class="text-eyebrow font-medium uppercase text-fg-3">
+								Live stream format
+							</span>
+							<select id="liveContainer" class="field-input">
+								<option value="m3u8" data-i18n="login.field.liveContainer.option.m3u8">
+									HLS (.m3u8)
+								</option>
+								<option value="ts" data-i18n="login.field.liveContainer.option.ts">
+									MPEG-TS (.ts)
+								</option>
+							</select>
+							<span data-i18n="login.field.liveContainer.helper" class="text-xs text-fg-3 leading-relaxed">
+								Most providers use HLS. Switch to MPEG-TS only if your provider can't serve .m3u8.
+							</span>
+						</label>
+					</div>
+				</details>
+			</div>
+
+			<!-- M3U fields -->
+			<div id="m3u-fields" class="hidden flex-col gap-6">
+				<label class="flex flex-col gap-2">
+					<span
+						data-i18n="login.field.playlistUrl"
+						class="text-xs font-semibold tracking-wider uppercase text-fg-3">
+						Playlist URL
+					</span>
+					<input
+						id="m3uUrl"
+						type="text"
+						placeholder="example.com/playlist.m3u8"
+						class="field-input"
+					/>
+					<span data-i18n="login.field.playlistUrl.helper" class="text-xs text-fg-3 leading-relaxed">
+						Any URL that serves an M3U playlist. Extension and scheme optional.
+					</span>
+				</label>
+				<button
+					id="addFromWebsiteBtn"
+					type="button"
+					data-i18n="login.action.addFromWebsite"
+					class="hidden self-start text-sm font-medium text-accent hover:underline focus-visible:underline focus-visible:outline-none">
+					Add from website
+				</button>
+			</div>
+
+			<!-- Local-file fields -->
+			<div id="local-fields" class="hidden flex-col gap-6">
+				<label class="flex flex-col gap-2">
+					<span
+						data-i18n="login.field.localFile"
+						class="text-xs font-semibold tracking-wider uppercase text-fg-3">
+						Playlist file
+					</span>
+					<div class="flex flex-wrap items-center gap-3">
+						<button
+							id="localPickBtn"
+							type="button"
+							data-i18n="login.action.pickFile"
+							class="btn">
+							Choose file…
+						</button>
+						<span
+							id="localFileName"
+							class="truncate text-sm text-fg-3 font-mono min-w-0"
+							data-i18n="login.field.localFile.none"
+							>No file selected.</span>
+					</div>
+					<span data-i18n="login.field.localFile.helper" class="text-xs text-fg-3 leading-relaxed">
+						Pick a .m3u or .m3u8 file from your device. The contents are stored with this playlist so you can keep watching without re-picking the file.
+					</span>
+					<input
+						id="localFileInput"
+						type="file"
+						accept=".m3u,.m3u8,audio/x-mpegurl,application/vnd.apple.mpegurl"
+						class="hidden"
+					/>
+				</label>
+			</div>
+
+			<!-- Advanced: EPG sources (collapsed by default) -->
+			<details id="epg-sources" class="group rounded-xl border border-line bg-surface">
+				<summary
+					class="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer
+						hover:bg-surface-2 focus-visible:bg-surface-2 transition-colors rounded-xl
+						list-none min-h-12">
+					<span class="flex flex-col gap-0.5 min-w-0">
+						<span data-i18n="login.epg.advancedToggle" class="text-sm font-medium text-fg">
+							Custom EPG sources (optional)
+						</span>
+						<span
+							data-i18n="login.epg.advancedHelper"
+							class="text-xs text-fg-3 leading-relaxed">
+							Override the provider's XMLTV guide, or stack extra sources to fill missing channels.
+						</span>
+					</span>
+					<IconChevronDown
+						aria-hidden="true"
+						stroke={2}
+						class="size-4 shrink-0 text-fg-3 transition-[transform,color] duration-200
+							group-open:rotate-180 group-open:text-accent"
+					/>
+				</summary>
+
+				<div class="flex flex-col gap-5 px-4 pb-4 pt-1">
+					<!-- Primary override -->
+					<label class="flex flex-col gap-2">
+						<span
+							data-i18n="login.epg.primaryLabel"
+							class="text-eyebrow font-medium uppercase text-fg-3">
+							Primary EPG URL
+						</span>
+						<input
+							id="epgPrimary"
+							type="url"
+							placeholder="Leave empty to use the provider's default"
+							data-i18n-attr="placeholder:login.epg.primaryPlaceholder"
+							autocapitalize="off"
+							spellcheck="false"
+							inputmode="url"
+							class="field-input"
+						/>
+						<span
+							id="epgPrimaryStatus"
+							class="hidden text-xs leading-relaxed"></span>
+						<span data-i18n="login.epg.primaryHelper" class="text-xs text-fg-3 leading-relaxed">
+							XMLTV URL. Plain XML or gzipped (.xml.gz). Overrides the auto-detected source.
+						</span>
+					</label>
+
+					<!-- Additional sources -->
+					<div class="flex flex-col gap-2">
+						<span
+							data-i18n="login.epg.additionalLabel"
+							class="text-eyebrow font-medium uppercase text-fg-3">
+							Additional sources
+						</span>
+						<span data-i18n="login.epg.additionalHelper" class="text-xs text-fg-3 leading-relaxed">
+							Stacked in order. Each one fills channels the previous sources didn't supply - they never override the primary.
+						</span>
+						<ul id="epgAdditionalList" class="flex flex-col gap-2"></ul>
+					</div>
+
+					<div class="flex flex-col gap-2">
+						<div class="flex flex-wrap items-center gap-2">
+							<button
+								id="epgAddBtn"
+								type="button"
+								class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-bg px-3 py-1.5 text-sm text-fg-2
+									hover:bg-surface-2 hover:text-fg focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+								<IconPlus aria-hidden="true" stroke={2} class="size-3.5" />
+								<span data-i18n="login.epg.addSource">Add another source</span>
+							</button>
+							<button
+								id="epgTestBtn"
+								type="button"
+								data-i18n="login.epg.testButton"
+								class="inline-flex items-center gap-1.5 rounded-lg border border-line bg-bg px-3 py-1.5 text-sm text-fg-2
+									hover:bg-surface-2 hover:text-fg focus-visible:bg-surface-2 focus-visible:border-accent transition-colors
+									disabled:opacity-50 disabled:cursor-not-allowed">
+								Test sources
+							</button>
+						</div>
+						<div
+							id="epgTestStatus"
+							class="hidden items-start gap-2.5 rounded-xl border px-3.5 py-2.5 text-sm leading-relaxed"></div>
+					</div>
+
+					<!-- Skip provider auto-default (Xtream only).
+					     Same shell pattern as the "Sync with Live TV" row in
+					     CategoryPickerDialog so cross-page checkbox rows feel
+					     like one component. The :has(:checked) selector
+					     tinges the row accent when active so the user can
+					     see at a glance that the toggle is on, without
+					     squinting at the checkbox tick. -->
+					<label
+						id="epgDisableProviderRow"
+						class="flex items-start gap-2.5 rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-fg-2 shrink-0
+							cursor-pointer hover:bg-surface-3 focus-within:border-accent transition-colors
+							has-[:checked]:border-accent has-[:checked]:bg-accent-soft/40">
+						<input
+							id="epgDisableProvider"
+							type="checkbox"
+							class="mt-0.5 size-4 accent-accent shrink-0"
+						/>
+						<span class="flex flex-col leading-tight min-w-0">
+							<span
+								data-i18n="login.epg.disableProviderLabel"
+								class="text-fg">
+								Don't use the provider's default EPG
+							</span>
+							<span
+								data-i18n="login.epg.disableProviderHelper"
+								class="text-xs text-fg-3">
+								Skip the auto-detected source. Only the URLs above will be used - lets you verify a custom EPG works on its own.
+							</span>
+						</span>
+					</label>
+				</div>
+			</details>
+
+			<!-- Status -->
+			<div
+				id="status"
+				class="hidden items-start gap-2.5 rounded-xl border px-3.5 py-2.5 text-sm leading-relaxed">
+			</div>
+
+			<!-- "Run full diagnostic" affordance + result panel. Hidden until the
+			     user has hit Test once; clicking the link runs the multi-step
+			     wizard in lib/diagnostic.ts and renders the step-by-step result. -->
+			<div id="diagnostic-affordance" class="hidden flex-col gap-2">
+				<button
+					id="diagnostic-run-btn"
+					type="button"
+					class="self-start inline-flex items-center gap-1.5 rounded-lg border border-line bg-bg px-3.5 py-2 min-h-10 text-xs text-fg-2
+						hover:bg-surface-2 hover:text-fg focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+					<span data-i18n="diagnostic.runFull">Run full diagnostic</span>
+				</button>
+				<div
+					id="diagnostic-result"
+					class="hidden"
+					role="status"
+					aria-live="polite"
+					aria-atomic="false"></div>
+			</div>
+
+			<!-- Actions -->
+			<div
+				class="flex flex-wrap gap-2 pt-2 mt-2 border-t border-line">
+				<button
+					id="testBtn"
+					type="button"
+					data-i18n="login.action.test"
+					class="btn">
+					Test connection
+				</button>
+				<button
+					id="saveBtn"
+					type="submit"
+					data-i18n="login.action.save"
+					class="btn-primary ml-auto">
+					Save and continue
+				</button>
+			</div>
+		</form>
+
+		<p data-i18n="login.fineprint" class="mt-12 text-xs text-fg-3 leading-relaxed">
+			This app does not provide any content. Use any
+			Xtream-compatible IPTV subscription, or paste any M3U/M3U8 playlist
+			URL. Public test playlists are available at iptv-org.github.io/iptv.
+		</p>
+
+		</div>
+	</main>
+</Layout>
+
+<script>
+	import {
+		addEntry,
+		updateEntry,
+		getEntries,
+		parseXtreamUrl,
+		resolveServerScheme,
+		resolveM3UScheme,
+		LOCAL_M3U_SCHEME,
+		readLocalM3UContent,
+		isTauri,
+	} from "@/scripts/lib/creds.js";
+	import { t, LOCALE_EVENT } from "@/scripts/lib/i18n.js";
+	import { parseM3U, isHlsStreamManifest } from "@/scripts/lib/m3u-parser.ts";
+	import { isAndroidFsActive, pickM3UFile } from "@/scripts/lib/android-fs.js";
+	import { log } from "@/scripts/lib/log.js";
+	import {
+		invalidateEpgPlaylist,
+		EPG_SOURCE_STATUS_EVENT,
+		testEpgSource,
+	} from "@/scripts/lib/epg-data.js";
+	import { ICON_X } from "@/scripts/lib/icons.ts";
+	import { snifferAvailable } from "@/scripts/lib/stream-sniffer.ts";
+
+	const EPG_URL_RX = /^https?:\/\/[^\s]+$/i;
+
+	const MAX_LOCAL_M3U_BYTES = 25 * 1024 * 1024; // 25 MiB
+
+	const $ = (id) => /** @type {any} */ (document.getElementById(id));
+
+	const tabXtream = $("tab-xtream");
+	const tabM3u = $("tab-m3u");
+	const tabLocal = $("tab-local");
+	const xFields = $("xtream-fields");
+	const mFields = $("m3u-fields");
+	const lFields = $("local-fields");
+	const titleEl = $("title");
+	const emojiEl = $("playlistEmoji");
+	const accentGroupEl = $("playlistAccent");
+	const serverEl = $("serverUrl");
+	const userEl = $("username");
+	const passEl = $("password");
+	const m3uEl = $("m3uUrl");
+	const addFromWebsiteBtn = $("addFromWebsiteBtn");
+	const localPickBtn = $("localPickBtn");
+	const localFileInput = $("localFileInput");
+	const localFileNameEl = $("localFileName");
+	const statusEl = $("status");
+	const diagnosticAffordance = $("diagnostic-affordance");
+	const diagnosticRunBtn = $("diagnostic-run-btn");
+	const diagnosticResultEl = $("diagnostic-result");
+	const testBtn = $("testBtn");
+	const saveBtn = $("saveBtn");
+	const pageTitle = $("page-title");
+	const pageSubtitle = $("page-subtitle");
+
+	const epgDetails = $("epg-sources");
+	const epgPrimaryEl = /** @type {HTMLInputElement} */ ($("epgPrimary"));
+	const epgPrimaryStatus = $("epgPrimaryStatus");
+	const epgListEl = $("epgAdditionalList");
+	const epgAddBtn = $("epgAddBtn");
+
+	const mirrorsDetails = $("mirrors-section");
+	const mirrorsListEl = $("mirrorsList");
+	const mirrorsAddBtn = $("mirrorsAddBtn");
+	const xtreamAdvancedDetails = $("xtream-advanced");
+	const liveContainerEl = /** @type {HTMLSelectElement} */ ($("liveContainer"));
+	let liveContainerTouched = false;
+	liveContainerEl?.addEventListener("change", () => {
+		liveContainerTouched = true;
+	});
+
+	function applyLiveContainerAutoDefault(test) {
+		if (liveContainerTouched || !liveContainerEl) return false;
+		const formats = test?.allowedOutputFormats;
+		if (!Array.isArray(formats) || formats.length === 0) return false;
+		if (formats.includes("m3u8") || !formats.includes("ts")) return false;
+		if (liveContainerEl.value === "ts") return false;
+		liveContainerEl.value = "ts";
+		xtreamAdvancedDetails?.setAttribute("open", "");
+		return true;
+	}
+	const epgTestBtn = $("epgTestBtn");
+	const epgTestStatus = $("epgTestStatus");
+	const epgDisableProviderRow = $("epgDisableProviderRow");
+	const epgDisableProviderEl = /** @type {HTMLInputElement} */ ($("epgDisableProvider"));
+	let epgTestAbort = null;
+
+	/** @type {{ name: string, text: string } | null} */
+	let pickedLocal = null;
+
+	// "" (the "App default" swatch) means no override.
+	function syncPlaylistAccentButtons(value) {
+		for (const btn of accentGroupEl?.querySelectorAll(".accent-btn") || []) {
+			btn.setAttribute("aria-checked", String((btn.dataset.accentValue || "") === (value || "")));
+		}
+	}
+	function selectedPlaylistAccent() {
+		const checked = accentGroupEl?.querySelector('.accent-btn[aria-checked="true"]');
+		return checked?.dataset.accentValue || "";
+	}
+	accentGroupEl?.addEventListener("click", (event) => {
+		const target = /** @type {HTMLElement} */ (event.target);
+		const btn = target.closest(".accent-btn");
+		if (!btn) return;
+		syncPlaylistAccentButtons(btn.dataset.accentValue || "");
+	});
+	syncPlaylistAccentButtons("");
+
+	function readEpgUrlsFromForm() {
+		const primary = (epgPrimaryEl?.value || "").trim();
+		const additional = [];
+		const inputs = epgListEl?.querySelectorAll("input[data-role='epg-additional']") || [];
+		for (const input of inputs) {
+			const value = (/** @type {HTMLInputElement} */ (input).value || "").trim();
+			if (value) additional.push(value);
+		}
+		return { primary, additional };
+	}
+
+	function setEpgError(el, key) {
+		if (!el) return;
+		el.classList.remove("text-bad", "text-good", "text-warn");
+		if (!key) {
+			el.classList.add("hidden");
+			el.textContent = "";
+			el.removeAttribute("data-i18n");
+			return;
+		}
+		el.classList.remove("hidden");
+		el.classList.add("text-bad");
+		el.setAttribute("data-i18n", key);
+		el.textContent = t(key);
+	}
+
+	function validateEpgUrlInputs() {
+		setEpgError(epgPrimaryStatus, null);
+		const primary = (epgPrimaryEl?.value || "").trim();
+		if (primary && !EPG_URL_RX.test(primary)) {
+			setEpgError(epgPrimaryStatus, "login.epg.invalidUrl");
+			return false;
+		}
+		const seen = new Set();
+		if (primary) seen.add(primary);
+		let ok = true;
+		const rows = epgListEl?.querySelectorAll("[data-role='epg-row']") || [];
+		for (const row of rows) {
+			const input = /** @type {HTMLInputElement} */ (row.querySelector("input"));
+			const statusSpan = row.querySelector("[data-role='epg-row-status']");
+			if (!input || !statusSpan) continue;
+			statusSpan.classList.add("hidden");
+			statusSpan.classList.remove("text-bad", "text-good", "text-warn");
+			statusSpan.removeAttribute("data-i18n");
+			statusSpan.textContent = "";
+			const value = input.value.trim();
+			if (!value) continue;
+			if (!EPG_URL_RX.test(value)) {
+				statusSpan.classList.remove("hidden");
+				statusSpan.classList.add("text-bad");
+				statusSpan.setAttribute("data-i18n", "login.epg.invalidUrl");
+				statusSpan.textContent = t("login.epg.invalidUrl");
+				ok = false;
+				continue;
+			}
+			if (seen.has(value)) {
+				statusSpan.classList.remove("hidden");
+				statusSpan.classList.add("text-warn");
+				statusSpan.setAttribute("data-i18n", "login.epg.duplicateUrl");
+				statusSpan.textContent = t("login.epg.duplicateUrl");
+				ok = false;
+				continue;
+			}
+			seen.add(value);
+		}
+		return ok;
+	}
+
+	function makeRemoveBtn(row) {
+		const btn = document.createElement("button");
+		btn.type = "button";
+		btn.className =
+			"shrink-0 rounded-md min-h-11 min-w-11 text-base text-fg-3 hover:text-bad hover:bg-bad/10 focus-visible:text-bad focus-visible:bg-bad/10 inline-flex items-center justify-center transition-colors outline-none";
+		btn.setAttribute("aria-label", t("login.epg.removeSource"));
+		btn.setAttribute("data-i18n-attr", "aria-label:login.epg.removeSource");
+		btn.innerHTML = ICON_X;
+		btn.addEventListener("click", () => {
+			row.remove();
+			validateEpgUrlInputs();
+		});
+		return btn;
+	}
+
+	function addEpgRow(initialValue = "") {
+		if (!epgListEl) return;
+		const row = document.createElement("li");
+		row.dataset.role = "epg-row";
+		row.className = "flex flex-col gap-1";
+
+		const inputRow = document.createElement("div");
+		inputRow.className = "flex items-center gap-2";
+
+		const input = document.createElement("input");
+		input.type = "url";
+		input.dataset.role = "epg-additional";
+		input.placeholder = "https://example.com/epg.xml.gz";
+		input.autocapitalize = "off";
+		input.spellcheck = false;
+		input.inputMode = "url";
+		input.className = "field-input flex-1 min-w-0";
+		input.value = initialValue;
+		input.addEventListener("blur", validateEpgUrlInputs);
+
+		const removeBtn = makeRemoveBtn(row);
+
+		inputRow.append(input, removeBtn);
+
+		const status = document.createElement("span");
+		status.dataset.role = "epg-row-status";
+		status.className = "hidden text-xs leading-relaxed pl-1";
+
+		row.append(inputRow, status);
+		epgListEl.appendChild(row);
+		window.SpatialNavigation?.makeFocusable?.();
+		return row;
+	}
+
+	function paintSourceBadge(target, status) {
+		if (!target) return;
+		target.classList.remove("hidden", "text-bad", "text-good", "text-warn");
+		target.removeAttribute("data-i18n");
+		if (!status) {
+			target.classList.add("hidden");
+			target.textContent = "";
+			return;
+		}
+		if (status.status === "ok") {
+			target.classList.add("text-good");
+			const key = "login.epg.sourceStatusOk";
+			target.setAttribute("data-i18n", key);
+			target.textContent = t(key, { count: (status.count || 0).toLocaleString() });
+		} else {
+			target.classList.add("text-bad");
+			target.textContent = t("login.epg.sourceStatusError", {
+				error: status.error || "Unknown error",
+			});
+		}
+	}
+
+	function applySourceStatuses(detail) {
+		if (!editing || !detail || detail.playlistId !== editing._id) return;
+		const sources = Array.isArray(detail.sources) ? detail.sources : [];
+		if (!sources.length) return;
+
+		const primary = sources.find((source) => source.kind === "primary");
+		// Only paint a primary badge when the user has actually set an override.
+		if (primary && (epgPrimaryEl?.value || "").trim() === primary.url) {
+			paintSourceBadge(epgPrimaryStatus, primary);
+		} else {
+			paintSourceBadge(epgPrimaryStatus, null);
+		}
+
+		const additional = sources.filter((source) => source.kind === "additional");
+		const rows = Array.from(
+			epgListEl?.querySelectorAll("[data-role='epg-row']") || []
+		);
+		for (const row of rows) {
+			const input = /** @type {HTMLInputElement} */ (row.querySelector("input"));
+			const statusEl = row.querySelector("[data-role='epg-row-status']");
+			const value = (input?.value || "").trim();
+			const match = additional.find((source) => source.url === value);
+			paintSourceBadge(statusEl, match || null);
+		}
+	}
+
+	epgAddBtn?.addEventListener("click", () => addEpgRow(""));
+
+	function readMirrorsFromForm() {
+		const rows = mirrorsListEl?.querySelectorAll("[data-role='mirror-row']") || [];
+		const out = [];
+		const primaryUser = (userEl?.value || "").trim();
+		const primaryPass = (passEl?.value || "").trim();
+		for (const row of rows) {
+			const serverInput = /** @type {HTMLInputElement} */ (row.querySelector("[data-role='mirror-server']"));
+			const userInput = /** @type {HTMLInputElement} */ (row.querySelector("[data-role='mirror-user']"));
+			const passInput = /** @type {HTMLInputElement} */ (row.querySelector("[data-role='mirror-pass']"));
+			const serverUrl = (serverInput?.value || "").trim();
+			if (!serverUrl) continue;
+			const username = (userInput?.value || "").trim() || primaryUser;
+			const password = (passInput?.value || "").trim() || primaryPass;
+			if (!username || !password) continue;
+			out.push({ serverUrl, username, password });
+		}
+		return out;
+	}
+
+	function addMirrorRow(initial = {}) {
+		if (!mirrorsListEl) return;
+		const row = document.createElement("li");
+		row.dataset.role = "mirror-row";
+		row.className = "flex flex-col gap-2 rounded-lg border border-line bg-surface-2 p-3";
+
+		const header = document.createElement("div");
+		header.className = "flex items-center justify-between gap-2";
+		const label = document.createElement("span");
+		label.className = "text-eyebrow font-medium uppercase text-fg-3";
+		label.setAttribute("data-i18n", "login.mirrors.rowLabel");
+		label.textContent = t("login.mirrors.rowLabel");
+		header.appendChild(label);
+
+		const removeBtn = document.createElement("button");
+		removeBtn.type = "button";
+		removeBtn.className =
+			"shrink-0 rounded-md min-h-11 min-w-11 text-base text-fg-3 hover:text-bad hover:bg-bad/10 focus-visible:text-bad focus-visible:bg-bad/10 inline-flex items-center justify-center transition-colors outline-none";
+		removeBtn.setAttribute("aria-label", t("login.mirrors.remove"));
+		removeBtn.setAttribute("data-i18n-attr", "aria-label:login.mirrors.remove");
+		removeBtn.innerHTML = ICON_X;
+		removeBtn.addEventListener("click", () => row.remove());
+		header.appendChild(removeBtn);
+
+		const serverInput = document.createElement("input");
+		serverInput.type = "text";
+		serverInput.dataset.role = "mirror-server";
+		serverInput.placeholder = "http://backup.example.com:8080";
+		serverInput.autocapitalize = "off";
+		serverInput.spellcheck = false;
+		serverInput.className = "field-input";
+		serverInput.value = initial.serverUrl || "";
+
+		const credRow = document.createElement("div");
+		credRow.className = "grid grid-cols-1 sm:grid-cols-2 gap-3";
+
+		const userInput = document.createElement("input");
+		userInput.type = "text";
+		userInput.dataset.role = "mirror-user";
+		userInput.autocapitalize = "off";
+		userInput.spellcheck = false;
+		userInput.placeholder = t("login.mirrors.userPlaceholder");
+		userInput.setAttribute("data-i18n-attr", "placeholder:login.mirrors.userPlaceholder");
+		userInput.className = "field-input";
+		userInput.value = initial.username || "";
+
+		const passInput = document.createElement("input");
+		passInput.type = "password";
+		passInput.dataset.role = "mirror-pass";
+		passInput.placeholder = t("login.mirrors.passPlaceholder");
+		passInput.setAttribute("data-i18n-attr", "placeholder:login.mirrors.passPlaceholder");
+		passInput.className = "field-input";
+		passInput.value = initial.password || "";
+
+		credRow.append(userInput, passInput);
+
+		// Mirror the primary "paste full player_api URL" auto-split behaviour.
+		serverInput.addEventListener("input", () => {
+			const parsed = parseXtreamUrl(serverInput.value.trim());
+			if (parsed) {
+				serverInput.value = parsed.serverUrl;
+				if (!userInput.value) userInput.value = parsed.username;
+				if (!passInput.value) passInput.value = parsed.password;
+			}
+		});
+
+		row.append(header, serverInput, credRow);
+		mirrorsListEl.appendChild(row);
+		window.SpatialNavigation?.makeFocusable?.();
+		return row;
+	}
+
+	mirrorsAddBtn?.addEventListener("click", () => {
+		const row = addMirrorRow();
+		row?.querySelector("input[data-role='mirror-server']")?.focus();
+	});
+	epgPrimaryEl?.addEventListener("blur", validateEpgUrlInputs);
+	document.addEventListener(EPG_SOURCE_STATUS_EVENT, (event) => {
+		applySourceStatuses(/** @type {CustomEvent} */ (event).detail);
+	});
+	document.addEventListener(LOCALE_EVENT, () => {
+		// Re-render i18n'd helper text on locale change.
+		validateEpgUrlInputs();
+	});
+
+	// Same palette + dot pattern as the connection-test status above so
+	// "Test sources" and "Test connection" read as one component family.
+	const EPG_TEST_PALETTE = {
+		good: "border-ok/30 bg-ok/10 text-ok",
+		warn: "border-warn/30 bg-warn/10 text-warn",
+		bad: "border-bad/30 bg-bad/10 text-bad",
+		busy: "border-line bg-surface text-fg-2",
+	};
+
+	function setEpgTestStatus(message, tone) {
+		if (!epgTestStatus) return;
+		epgTestStatus.removeAttribute("data-celebrate");
+		if (!message) {
+			epgTestStatus.classList.add("hidden");
+			epgTestStatus.classList.remove("flex");
+			epgTestStatus.innerHTML = "";
+			return;
+		}
+		epgTestStatus.classList.remove("hidden");
+		epgTestStatus.classList.add("flex");
+		const palette = EPG_TEST_PALETTE[tone] || EPG_TEST_PALETTE.busy;
+		epgTestStatus.className =
+			"flex items-start gap-2.5 rounded-xl border px-3.5 py-2.5 text-sm leading-relaxed " +
+			palette;
+		const dot = `<span aria-hidden="true" class="mt-2 inline-block h-1.5 w-1.5 rounded-full bg-current shrink-0"></span>`;
+		epgTestStatus.innerHTML = `${dot}<span>${escapeText(message)}</span>`;
+	}
+
+	async function runEpgTest() {
+		if (!validateEpgUrlInputs()) {
+			setEpgTestStatus(t("login.epg.invalidUrl"), "bad");
+			return;
+		}
+		const { primary, additional } = readEpgUrlsFromForm();
+		const targets = [];
+		if (primary) {
+			targets.push({ url: primary, badge: epgPrimaryStatus });
+		}
+		const rows = Array.from(
+			epgListEl?.querySelectorAll("[data-role='epg-row']") || []
+		);
+		for (const row of rows) {
+			const input = /** @type {HTMLInputElement} */ (row.querySelector("input"));
+			const badge = row.querySelector("[data-role='epg-row-status']");
+			const value = (input?.value || "").trim();
+			if (!value) continue;
+			if (additional.includes(value)) {
+				targets.push({ url: value, badge });
+			}
+		}
+		if (!targets.length) {
+			setEpgTestStatus(t("login.epg.testNoSources"), "warn");
+			return;
+		}
+
+		// Cancel anything in-flight from a previous click.
+		if (epgTestAbort) {
+			try { epgTestAbort.abort(); } catch {}
+		}
+		epgTestAbort = new AbortController();
+		const signal = epgTestAbort.signal;
+
+		if (epgTestBtn) {
+			epgTestBtn.disabled = true;
+			epgTestBtn.removeAttribute("data-i18n");
+			epgTestBtn.textContent = t("login.epg.testButtonBusy");
+		}
+		setEpgTestStatus(
+			t("login.epg.testing", { count: targets.length.toLocaleString() }),
+			"busy"
+		);
+
+		// Mark each badge as in-flight before any awaits.
+		for (const target of targets) {
+			if (!target.badge) continue;
+			target.badge.classList.remove("hidden", "text-bad", "text-good", "text-warn");
+			target.badge.classList.add("text-fg-3");
+			target.badge.removeAttribute("data-i18n");
+			target.badge.textContent = t("login.epg.sourceFetching");
+		}
+
+		const results = await Promise.all(
+			targets.map((target) =>
+				testEpgSource(target.url, { signal }).then((res) => ({ target, res }))
+			)
+		);
+
+		if (signal.aborted) return;
+
+		let okCount = 0;
+		let errCount = 0;
+		for (const { target, res } of results) {
+			if (!target.badge) continue;
+			target.badge.classList.remove("text-fg-3", "text-bad", "text-good", "text-warn");
+			target.badge.removeAttribute("data-i18n");
+			if (res.ok) {
+				okCount++;
+				target.badge.classList.remove("hidden");
+				target.badge.classList.add("text-good");
+				target.badge.textContent = t("login.epg.sourceStatusOk", {
+					count: (res.count || 0).toLocaleString(),
+				});
+			} else {
+				errCount++;
+				target.badge.classList.remove("hidden");
+				target.badge.classList.add("text-bad");
+				target.badge.textContent = t("login.epg.sourceStatusError", {
+					error: res.error || "Unknown error",
+				});
+			}
+		}
+
+		if (epgTestBtn) {
+			epgTestBtn.disabled = false;
+			epgTestBtn.setAttribute("data-i18n", "login.epg.testButton");
+			epgTestBtn.textContent = t("login.epg.testButton");
+		}
+		setEpgTestStatus(
+			t("login.epg.testDone", {
+				ok: okCount.toLocaleString(),
+				total: targets.length.toLocaleString(),
+			}),
+			errCount === 0 ? "good" : okCount === 0 ? "bad" : "warn"
+		);
+		if (errCount === 0 && epgTestStatus) {
+			void epgTestStatus.offsetWidth;
+			epgTestStatus.setAttribute("data-celebrate", "true");
+		}
+		epgTestAbort = null;
+	}
+	epgTestBtn?.addEventListener("click", () => {
+		runEpgTest();
+	});
+
+	function refreshDisableProviderVisibility() {
+		if (!epgDisableProviderRow) return;
+		epgDisableProviderRow.style.display = mode === "xtream" ? "" : "none";
+	}
+
+	const params = new URLSearchParams(location.search);
+	const editingId = params.get("edit");
+	const isDemo = params.get("demo") === "1";
+	const DEMO_M3U_URL = "https://iptv-org.github.io/iptv/index.m3u";
+	let editing = null;
+	let mode = "xtream";
+
+	const ACTIVE_TAB =
+		"bg-accent-soft text-accent ring-1 ring-accent/30";
+	const IDLE_TAB = "text-fg-2 hover:text-fg";
+
+	function setMode(next) {
+		const prev = mode;
+		mode = next;
+		const isX = next === "xtream";
+		const isM = next === "m3u";
+		const isL = next === "local-m3u";
+		xFields.classList.toggle("hidden", !isX);
+		xFields.classList.toggle("flex", isX);
+		mFields.classList.toggle("hidden", !isM);
+		mFields.classList.toggle("flex", isM);
+		lFields.classList.toggle("hidden", !isL);
+		lFields.classList.toggle("flex", isL);
+
+		if (prev && prev !== next) {
+			const shown = isX ? xFields : isM ? mFields : lFields;
+			shown.classList.remove("fade-section");
+			void shown.offsetWidth;
+			shown.classList.add("fade-section");
+		}
+
+		refreshDisableProviderVisibility();
+
+		applyTabStyles(tabXtream, isX);
+		applyTabStyles(tabM3u, isM);
+		applyTabStyles(tabLocal, isL);
+
+		// Local-file picking is its own verification - the Test button has no
+		// remote endpoint to probe, so hide it. We still run parseM3U inline
+		// after picking and surface the result via showStatus().
+		testBtn.classList.toggle("hidden", isL);
+		clearStatus();
+		hideDiagnosticResult();
+		if (diagnosticAffordance) {
+			diagnosticAffordance.classList.add("hidden");
+			diagnosticAffordance.classList.remove("flex");
+		}
+	}
+
+	function applyTabStyles(btn, active) {
+		btn.className =
+			"flex flex-col items-center justify-center text-center px-3 py-2 rounded-lg min-h-12 transition-colors disabled:cursor-not-allowed disabled:opacity-40 " +
+			(active ? ACTIVE_TAB : IDLE_TAB);
+	}
+
+	tabXtream.addEventListener("click", () => {
+		if (editing) return;
+		setMode("xtream");
+	});
+	tabM3u.addEventListener("click", () => {
+		if (editing) return;
+		setMode("m3u");
+	});
+	tabLocal.addEventListener("click", () => {
+		if (editing) return;
+		setMode("local-m3u");
+	});
+
+	function setPickedLocal(picked) {
+		pickedLocal = picked;
+		if (picked) {
+			localFileNameEl.removeAttribute("data-i18n");
+			localFileNameEl.textContent = picked.name;
+			localFileNameEl.classList.remove("text-fg-3");
+			localFileNameEl.classList.add("text-fg-2");
+		} else {
+			localFileNameEl.setAttribute("data-i18n", "login.field.localFile.none");
+			localFileNameEl.textContent = t("login.field.localFile.none");
+			localFileNameEl.classList.remove("text-fg-2");
+			localFileNameEl.classList.add("text-fg-3");
+		}
+	}
+
+	function looksLikeM3U(text) {
+		const head = (text || "").slice(0, 4096);
+		return head.includes("#EXTM3U") || /#EXTINF\s*:/i.test(head);
+	}
+
+	async function pickLocalViaTauri() {
+		const { open } = await import("@tauri-apps/plugin-dialog");
+		const picked = await open({
+			multiple: false,
+			directory: false,
+			filters: [{ name: "M3U playlist", extensions: ["m3u", "m3u8"] }],
+		});
+		if (!picked || typeof picked !== "string") return null;
+		const fs = await import("@tauri-apps/plugin-fs");
+		try {
+			const stat = await fs.stat(picked);
+			if (stat?.size && stat.size > MAX_LOCAL_M3U_BYTES) {
+				showStatus("unavailable", t("login.status.localTooLarge", { size: stat.size.toLocaleString() }));
+				return null;
+			}
+		} catch {}
+		const text = await fs.readTextFile(picked);
+		const slash = Math.max(picked.lastIndexOf("/"), picked.lastIndexOf("\\"));
+		const name = slash >= 0 ? picked.slice(slash + 1) : picked;
+		return { name, text };
+	}
+
+	async function readPickedFile(file) {
+		if (!file) return null;
+		if (file.size > MAX_LOCAL_M3U_BYTES) {
+			showStatus("unavailable", t("login.status.localTooLarge", { size: file.size.toLocaleString() }));
+			return null;
+		}
+		const text = await file.text();
+		return { name: file.name, text };
+	}
+
+	if (snifferAvailable) addFromWebsiteBtn.classList.remove("hidden");
+	addFromWebsiteBtn.addEventListener("click", async () => {
+		const { openAddFromWebsiteDialog } = await import("@/scripts/lib/add-from-website-dialog.ts");
+		await openAddFromWebsiteDialog();
+	});
+
+	localPickBtn.addEventListener("click", async () => {
+		clearStatus();
+		localPickBtn.disabled = true;
+		try {
+			let picked = null;
+			if (isAndroidFsActive()) {
+				try {
+					picked = await pickM3UFile({ maxBytes: MAX_LOCAL_M3U_BYTES });
+				} catch (err) {
+					log.warn("[xt:login] android-fs picker failed, falling back:", err);
+				}
+			} else if (isTauri) {
+				try {
+					picked = await pickLocalViaTauri();
+				} catch (err) {
+					log.warn("[xt:login] tauri file picker failed, falling back:", err);
+				}
+			}
+			if (!picked) {
+				localFileInput.value = "";
+				localFileInput.click();
+				return;
+			}
+			if (picked.oversize || (picked.size && picked.size > MAX_LOCAL_M3U_BYTES)) {
+				const oversizeBytes = picked.size || picked.text?.length || 0;
+				showStatus("unavailable", t("login.status.localTooLarge", { size: oversizeBytes.toLocaleString() }));
+				return;
+			}
+			if (picked.text && picked.text.length > MAX_LOCAL_M3U_BYTES) {
+				showStatus("unavailable", t("login.status.localTooLarge", { size: picked.text.length.toLocaleString() }));
+				return;
+			}
+			finalizePickedFile(picked);
+		} finally {
+			localPickBtn.disabled = false;
+		}
+	});
+
+	localFileInput.addEventListener("change", async () => {
+		const file = localFileInput.files?.[0];
+		if (!file) return;
+		const picked = await readPickedFile(file);
+		localFileInput.value = "";
+		if (picked) finalizePickedFile(picked);
+	});
+
+	function finalizePickedFile(picked) {
+		if (!picked || !picked.text) {
+			showStatus("unavailable", t("login.status.localEmpty"));
+			setPickedLocal(null);
+			return;
+		}
+		if (!looksLikeM3U(picked.text) || isHlsStreamManifest(picked.text)) {
+			showStatus("unavailable", t("login.status.localNotM3u"));
+			setPickedLocal(null);
+			return;
+		}
+		const parsed = parseM3U(picked.text);
+		const count = parsed.entries.length;
+		setPickedLocal(picked);
+		if (!titleEl.value.trim()) {
+			titleEl.value = picked.name.replace(/\.(m3u8?|M3U8?)$/, "");
+		}
+		showStatus(
+			"active",
+			t("login.status.playlistOk") +
+				(count
+					? t("login.status.playlistEntries", { count: count.toLocaleString() })
+					: ".")
+		);
+	}
+
+	serverEl.addEventListener("input", () => {
+		const parsed = parseXtreamUrl(serverEl.value.trim());
+		if (parsed) {
+			serverEl.value = parsed.serverUrl;
+			if (!userEl.value) userEl.value = parsed.username;
+			if (!passEl.value) passEl.value = parsed.password;
+			showStatus("info", t("login.status.credentialsExtracted"));
+		}
+	});
+
+	function clearStatus() {
+		statusEl.classList.add("hidden");
+		statusEl.classList.remove("flex");
+		statusEl.innerHTML = "";
+	}
+
+	function showStatus(kind, message) {
+		const wasHidden = statusEl.classList.contains("hidden");
+		statusEl.classList.remove("hidden");
+		statusEl.classList.add("flex");
+		// Reset palette classes, then apply.
+		statusEl.className =
+			"flex items-start gap-2.5 rounded-xl border px-3.5 py-2.5 text-sm leading-relaxed ";
+		const palette = {
+			info: "border-accent/30 bg-accent-soft text-accent",
+			active: "border-ok/30 bg-ok/10 text-ok",
+			expired: "border-warn/30 bg-warn/10 text-warn",
+			inactive: "border-warn/30 bg-warn/10 text-warn",
+			unavailable: "border-bad/30 bg-bad/10 text-bad",
+			busy: "border-line bg-surface text-fg-2",
+		};
+		statusEl.className += palette[kind] || palette.info;
+		// `mt-2` (8px) lines the dot up with the first-line optical centre for
+		// `text-sm leading-relaxed` (line-height ~22.75px). The earlier `mt-1.5`
+		// looked too high on single-line messages.
+		const dot = `<span aria-hidden="true" class="mt-2 inline-block h-1.5 w-1.5 rounded-full bg-current shrink-0"></span>`;
+		const isMultiline = typeof message === "string" && message.includes("\n");
+		const bodyClass = isMultiline ? ' class="whitespace-pre-line"' : "";
+		statusEl.innerHTML = `${dot}<span${bodyClass}>${escapeText(message)}</span>`;
+		if (wasHidden) {
+			statusEl.classList.remove("status-enter");
+			void statusEl.offsetWidth;
+			statusEl.classList.add("status-enter");
+		}
+	}
+
+	function escapeText(s) {
+		const d = document.createElement("div");
+		d.textContent = s;
+		return d.innerHTML;
+	}
+
+	function isPrivateHost(host) {
+		return (
+			/^10\./.test(host) ||
+			/^192\.168\./.test(host) ||
+			/^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
+			host === "localhost" ||
+			host.endsWith(".local")
+		);
+	}
+
+	function privateHostHint(rawUrl) {
+		try {
+			const u = new URL(rawUrl);
+			if (!isTauri && isPrivateHost(u.hostname)) {
+				return " " + t("login.status.privateHostHint");
+			}
+		} catch {}
+		return "";
+	}
+
+	function describeCandidateResult(result, serverUrl) {
+		const exp = result.expDate
+			? t("login.status.expiresOn", { date: new Date(result.expDate).toLocaleDateString() })
+			: "";
+		switch (result.status) {
+			case "active":
+				return t("login.status.connected") + exp;
+			case "expired":
+				return t("login.status.expired") + exp;
+			case "inactive":
+				return t("login.status.inactive") + exp;
+			default: {
+				// Map the structured reason from classifyError to actionable copy
+				const reasonKeyMap = {
+					unreachable: "login.status.unreachable",
+					timeout: "login.status.timeout",
+					cors: "login.status.corsBlocked",
+					auth_rejected: "login.status.badCredentials",
+					not_found: "login.status.notFound",
+					rate_limited: "login.status.rateLimited",
+					server_error: "login.status.httpError",
+					http_error: "login.status.httpError",
+					bad_response: "login.status.badResponseXtream",
+					unknown: "login.status.serverUnreachable",
+				};
+				const reasonKey = (result.reason && reasonKeyMap[result.reason]) || "login.status.serverUnreachable";
+				const params = result.httpStatus != null ? { status: String(result.httpStatus) } : {};
+				return t(reasonKey, params) + privateHostHint(serverUrl);
+			}
+		}
+	}
+
+	function describeResolvedCandidate(resolved) {
+		const base = describeCandidateResult(resolved.test, resolved.serverUrl);
+		if (!resolved.swapped) return base;
+		const noteKey = resolved.scheme === "http"
+			? "login.status.schemeSwappedHttp"
+			: "login.status.schemeSwappedHttps";
+		return base + " " + t(noteKey);
+	}
+
+	function reflectResolvedUrls(primaryResolved, mirrorResolveds) {
+		if (primaryResolved && serverEl.value.trim() !== primaryResolved.serverUrl) {
+			serverEl.value = primaryResolved.serverUrl;
+		}
+		const rows = mirrorsListEl?.querySelectorAll("[data-role='mirror-row']") || [];
+		let mirrorIdx = 0;
+		for (const row of rows) {
+			const serverInput = /** @type {HTMLInputElement} */ (row.querySelector("[data-role='mirror-server']"));
+			if (!serverInput || !serverInput.value.trim()) continue;
+			const resolved = mirrorResolveds[mirrorIdx++];
+			if (resolved && serverInput.value.trim() !== resolved.serverUrl) {
+				serverInput.value = resolved.serverUrl;
+			}
+		}
+	}
+
+	// Rank candidate verdicts: active > expired > inactive > unavailable.
+	function statusRank(status) {
+		if (status === "active") return 3;
+		if (status === "expired") return 2;
+		if (status === "inactive") return 1;
+		return 0;
+	}
+
+	testBtn.addEventListener("click", async () => {
+		testBtn.disabled = true;
+		try {
+			if (mode === "xtream") {
+				const serverUrl = serverEl.value.trim();
+				const username = userEl.value.trim();
+				const password = passEl.value.trim();
+				if (!serverUrl || !username || !password) {
+					showStatus(
+						"unavailable",
+						t("login.status.fillFields")
+					);
+					return;
+				}
+				const candidates = [
+					{ label: t("login.mirrors.primaryLabel"), serverUrl, username, password },
+					...readMirrorsFromForm().map((mirror, idx) => ({
+						label: t("login.mirrors.candidateLabel", { n: idx + 1 }),
+						...mirror,
+					})),
+				];
+				showStatus("busy", t("login.status.testing"));
+				const resolveds = await Promise.all(
+					candidates.map((cand) =>
+						resolveServerScheme({
+							serverUrl: cand.serverUrl,
+							username: cand.username,
+							password: cand.password,
+						})
+					)
+				);
+				reflectResolvedUrls(resolveds[0], resolveds.slice(1));
+				const results = resolveds.map((resolved) => resolved.test);
+				const containerAutoSwitched = applyLiveContainerAutoDefault(resolveds[0].test);
+				const containerNote = containerAutoSwitched
+					? "\n" + t("login.status.liveContainerAuto")
+					: "";
+
+				// Single-candidate path keeps the old single-line message.
+				if (candidates.length === 1) {
+					const result = results[0];
+					showStatus(
+						result.status === "active" ? "active"
+							: result.status === "expired" ? "expired"
+							: result.status === "inactive" ? "inactive"
+							: "unavailable",
+						describeResolvedCandidate(resolveds[0]) + containerNote
+					);
+				} else {
+					// Aggregate verdict = best candidate. Body lists each.
+					let bestRank = -1;
+					let bestStatus = "unavailable";
+					for (const result of results) {
+						const rank = statusRank(result.status);
+						if (rank > bestRank) {
+							bestRank = rank;
+							bestStatus = result.status === "unavailable" ? "unavailable" : result.status;
+						}
+					}
+					const lines = candidates.map((cand, idx) =>
+						`${cand.label}: ${describeResolvedCandidate(resolveds[idx])}`
+					);
+					showStatus(bestStatus, lines.join("\n") + containerNote);
+				}
+			} else {
+				const rawUrl = m3uEl.value.trim();
+				if (!rawUrl) {
+					showStatus("unavailable", t("login.status.enterM3uUrl"));
+					return;
+				}
+				showStatus("busy", t("login.status.fetching"));
+				const resolved = await resolveM3UScheme(rawUrl);
+				if (m3uEl.value.trim() !== resolved.url) m3uEl.value = resolved.url;
+				const result = resolved.test;
+				if (result.status === "active") {
+					const count = result.count || 0;
+					const swap = resolved.swapped
+						? " " + t(resolved.scheme === "http" ? "login.status.schemeSwappedHttp" : "login.status.schemeSwappedHttps")
+						: "";
+					showStatus(
+						"active",
+						t("login.status.playlistOk") + (count ? t("login.status.playlistEntries", { count: count.toLocaleString() }) : ".") + swap
+					);
+				} else {
+					const reasonKeyMap = {
+						unreachable: "login.status.unreachable",
+						timeout: "login.status.timeout",
+						cors: "login.status.corsBlocked",
+						not_found: "login.status.notFound",
+						rate_limited: "login.status.rateLimited",
+						server_error: "login.status.httpError",
+						http_error: "login.status.httpError",
+						bad_response: "login.status.badResponseM3U",
+						unknown: "login.status.playlistFetchFailed",
+					};
+					const reasonKey = (result.reason && reasonKeyMap[result.reason]) || "login.status.playlistFetchFailed";
+					const params = result.httpStatus != null ? { status: String(result.httpStatus) } : {};
+					showStatus("unavailable", t(reasonKey, params) + privateHostHint(resolved.url));
+				}
+			}
+			// After any Test result (success or failure), reveal the "Run full
+			// diagnostic" affordance. Hidden for local-m3u since there's no
+			// remote to probe step-by-step.
+			if (mode !== "local-m3u") revealDiagnosticAffordance();
+		} finally {
+			testBtn.disabled = false;
+		}
+	});
+
+	// Progressive disclosure: simple Test result first, then optional full
+	// step-by-step diagnostic on demand. Hidden until the user runs Test at
+	// least once (so it doesn't compete with the primary action).
+	function revealDiagnosticAffordance() {
+		if (!diagnosticAffordance) return;
+		diagnosticAffordance.classList.remove("hidden");
+		diagnosticAffordance.classList.add("flex");
+	}
+
+	function hideDiagnosticResult() {
+		if (!diagnosticResultEl) return;
+		diagnosticResultEl.classList.add("hidden");
+		diagnosticResultEl.replaceChildren();
+	}
+
+	// Whenever the user edits any credential field, hide the previous
+	// diagnostic result - it's now stale.
+	for (const el of [serverEl, userEl, passEl, m3uEl]) {
+		el?.addEventListener("input", hideDiagnosticResult);
+	}
+
+	diagnosticRunBtn?.addEventListener("click", async () => {
+		if (!diagnosticResultEl) return;
+		diagnosticRunBtn.setAttribute("disabled", "");
+		diagnosticRunBtn.classList.add("opacity-60");
+		diagnosticResultEl.classList.remove("hidden");
+		diagnosticResultEl.className =
+			"flex flex-col gap-2.5 rounded-xl border border-line bg-surface px-3.5 py-3 text-sm leading-relaxed text-fg-2";
+		diagnosticResultEl.textContent = t("diagnostic.running");
+		try {
+			const { runXtreamDiagnostic, runM3UDiagnostic, renderDiagnosticInto } = await import(
+				"@/scripts/lib/diagnostic.ts"
+			);
+			// Re-render the result panel each time a step completes. The Xtream
+			// wizard can take 5+ seconds end-to-end (vod + series catalogues
+			// can be slow), so users need to see rows appearing or they'll
+			// think the app is stuck.
+			const onProgress = (partialSteps) => {
+				renderDiagnosticInto(diagnosticResultEl, {
+					steps: partialSteps,
+					verdict: "running",
+					verdictMessage: t("diagnostic.running"),
+				});
+			};
+			let result;
+			if (mode === "xtream") {
+				result = await runXtreamDiagnostic({
+					serverUrl: serverEl.value.trim(),
+					username: userEl.value.trim(),
+					password: passEl.value.trim(),
+				}, { onProgress });
+			} else if (mode === "m3u") {
+				result = await runM3UDiagnostic(m3uEl.value.trim(), { onProgress });
+			} else {
+				diagnosticResultEl.classList.add("hidden");
+				return;
+			}
+			renderDiagnosticInto(diagnosticResultEl, result);
+		} catch (error) {
+			diagnosticResultEl.textContent = String(error?.message || error);
+		} finally {
+			diagnosticRunBtn.removeAttribute("disabled");
+			diagnosticRunBtn.classList.remove("opacity-60");
+		}
+	});
+
+	$("playlist-form").addEventListener("submit", async (e) => {
+		e.preventDefault();
+		saveBtn.disabled = true;
+		try {
+			if (!validateEpgUrlInputs()) {
+				epgDetails?.setAttribute("open", "");
+				showStatus("unavailable", t("login.epg.invalidUrl"));
+				return;
+			}
+			const { primary: epgUrl, additional: additionalEpgUrls } =
+				readEpgUrlsFromForm();
+			const disableProviderEpg =
+				mode === "xtream" ? !!epgDisableProviderEl?.checked : false;
+			let savedId = editing?._id || null;
+			const epgChanged =
+				editing &&
+				(editing.epgUrl !== epgUrl ||
+					JSON.stringify(editing.additionalEpgUrls || []) !==
+						JSON.stringify(additionalEpgUrls) ||
+					!!editing.disableProviderEpg !== disableProviderEpg);
+
+			if (mode === "xtream") {
+				const rawServerUrl = serverEl.value.trim();
+				const username = userEl.value.trim();
+				const password = passEl.value.trim();
+				if (!rawServerUrl || !username || !password) {
+					showStatus(
+						"unavailable",
+						t("login.status.allRequired")
+					);
+					return;
+				}
+				// Resolve scheme for primary + mirrors before persisting so the
+				// saved entry always has a usable http(s):// prefix and we don't
+				// re-probe on every API call.
+				showStatus("busy", t("login.status.testing"));
+				const rawMirrors = readMirrorsFromForm();
+				const allResolveds = await Promise.all([
+					resolveServerScheme({ serverUrl: rawServerUrl, username, password }),
+					...rawMirrors.map((mirror) => resolveServerScheme(mirror)),
+				]);
+				const primaryResolved = allResolveds[0];
+				const mirrorResolveds = allResolveds.slice(1);
+				reflectResolvedUrls(primaryResolved, mirrorResolveds);
+				const serverUrl = primaryResolved.serverUrl;
+				const mirrors = rawMirrors.map((mirror, idx) => ({
+					serverUrl: mirrorResolveds[idx].serverUrl,
+					username: mirror.username,
+					password: mirror.password,
+				}));
+				applyLiveContainerAutoDefault(primaryResolved.test);
+				const liveContainer = liveContainerEl?.value === "ts" ? "ts" : "m3u8";
+				const patch = {
+					type: "xtream",
+					title: titleEl.value.trim() || "",
+					emoji: emojiEl.value.trim(),
+					accent: selectedPlaylistAccent(),
+					serverUrl,
+					username,
+					password,
+					mirrors,
+					liveContainer,
+					epgUrl,
+					additionalEpgUrls,
+					disableProviderEpg,
+				};
+				if (editing) {
+					await updateEntry(editing._id, patch);
+				} else {
+					const saved = await addEntry(patch);
+					savedId = saved._id;
+				}
+			} else if (mode === "m3u") {
+				const rawUrl = m3uEl.value.trim();
+				if (!rawUrl) {
+					showStatus("unavailable", t("login.status.enterM3uUrl"));
+					return;
+				}
+				// Same silent-fallback rule as Xtream: probe both schemes, save
+				// whichever the playlist actually serves under, fall back to the
+				// typed scheme (or http) when the provider is unreachable.
+				showStatus("busy", t("login.status.fetching"));
+				const resolvedM3U = await resolveM3UScheme(rawUrl);
+				if (m3uEl.value.trim() !== resolvedM3U.url) m3uEl.value = resolvedM3U.url;
+				const patch = {
+					type: "m3u",
+					title: titleEl.value.trim() || "",
+					emoji: emojiEl.value.trim(),
+					accent: selectedPlaylistAccent(),
+					url: resolvedM3U.url,
+					epgUrl,
+					additionalEpgUrls,
+				};
+				if (editing) {
+					await updateEntry(editing._id, patch);
+				} else {
+					const saved = await addEntry(patch);
+					savedId = saved._id;
+				}
+			} else {
+				if (!pickedLocal || !pickedLocal.text) {
+					showStatus("unavailable", t("login.status.localPickFirst"));
+					return;
+				}
+				const parsed = parseM3U(pickedLocal.text);
+				const patch = {
+					type: "local-m3u",
+					title: titleEl.value.trim() || pickedLocal.name.replace(/\.(m3u8?|M3U8?)$/, ""),
+					emoji: emojiEl.value.trim(),
+					accent: selectedPlaylistAccent(),
+					content: pickedLocal.text,
+					sourceName: pickedLocal.name,
+					// Preserve any user-supplied override
+					epgUrl: epgUrl || parsed.epgUrl || "",
+					additionalEpgUrls,
+				};
+				if (editing) {
+					await updateEntry(editing._id, patch);
+				} else {
+					const saved = await addEntry(patch);
+					savedId = saved._id;
+				}
+				if (savedId && parsed.epgUrls.length) {
+					try {
+						// Raw comma-joined list, matching the format catalog.js writes to the same key.
+						localStorage.setItem(`xt_m3u_epg:${savedId}`, parsed.epgUrls.join(","));
+					} catch {}
+				}
+				if (savedId) {
+					try {
+						const { warmupActive } = await import("@/scripts/lib/catalog.js");
+						await warmupActive(savedId, { force: true });
+					} catch (err) {
+						log.warn("[xt:login] post-save warmup failed:", err);
+					}
+				}
+			}
+
+			// Force a fresh EPG load on next visit if the user changed any
+			// source URL. Drops memCache + per-URL HTTP validators + IDB so
+			// the next loadProgrammes() refetches all sources cleanly.
+			if (savedId && (epgChanged || !editing)) {
+				invalidateEpgPlaylist(savedId);
+			}
+
+			location.href = editing ? "/" : "/livetv";
+		} finally {
+			saveBtn.disabled = false;
+		}
+	});
+
+	// ---- Boot: prefill for editing, or default to "add Xtream" ----
+	if (editingId) {
+		const entries = await getEntries();
+		editing = entries.find((e) => e._id === editingId) || null;
+	}
+	if (editing) {
+		pageTitle.removeAttribute("data-i18n");
+		pageTitle.textContent = t("login.title.edit");
+		pageSubtitle.removeAttribute("data-i18n");
+		pageSubtitle.textContent = t("login.subtitle.edit", { title: editing.title });
+		saveBtn.removeAttribute("data-i18n");
+		saveBtn.textContent = t("login.action.saveEdit");
+		tabXtream.disabled = editing.type !== "xtream";
+		tabM3u.disabled = editing.type !== "m3u";
+		tabLocal.disabled = editing.type !== "local-m3u";
+		setMode(editing.type);
+		titleEl.value = editing.title || "";
+		emojiEl.value = editing.emoji || "";
+		syncPlaylistAccentButtons(editing.accent || "");
+		if (epgPrimaryEl) epgPrimaryEl.value = editing.epgUrl || "";
+		const additional = Array.isArray(editing.additionalEpgUrls)
+			? editing.additionalEpgUrls
+			: [];
+		for (const url of additional) addEpgRow(url);
+		if (epgDisableProviderEl) {
+			epgDisableProviderEl.checked = !!editing.disableProviderEpg;
+		}
+		// Open the disclosure when there's already something to see; keeps it
+		// out of the way on fresh-add.
+		if (
+			editing.epgUrl ||
+			additional.length ||
+			editing.disableProviderEpg
+		) {
+			epgDetails?.setAttribute("open", "");
+		}
+		if (editing.type === "xtream") {
+			serverEl.value = editing.serverUrl || "";
+			userEl.value = editing.username || "";
+			passEl.value = editing.password || "";
+			const mirrors = Array.isArray(editing.mirrors) ? editing.mirrors : [];
+			for (const mirror of mirrors) addMirrorRow(mirror);
+			if (mirrors.length) mirrorsDetails?.setAttribute("open", "");
+			if (liveContainerEl) {
+				liveContainerEl.value = editing.liveContainer === "ts" ? "ts" : "m3u8";
+			}
+			if (editing.liveContainer === "ts") {
+				xtreamAdvancedDetails?.setAttribute("open", "");
+			}
+		} else if (editing.type === "m3u") {
+			m3uEl.value = editing.url || "";
+		} else {
+			// local-m3u: surface what was already saved. User can pick a new
+			// file to replace it; otherwise we keep the existing content,
+			// which lives in IDB (see local-content.js).
+			let existingText = "";
+			try {
+				existingText = await readLocalM3UContent(LOCAL_M3U_SCHEME + editing._id);
+			} catch {
+				// Storage hiccup - degrade to an empty picker so the user can re-attach the file.
+			}
+			setPickedLocal({
+				name: editing.sourceName || editing.title || "",
+				text: existingText,
+			});
+		}
+	} else if (isDemo) {
+		pageTitle.setAttribute("data-i18n", "login.title.demo");
+		pageTitle.textContent = t("login.title.demo");
+		pageSubtitle.setAttribute("data-i18n", "login.subtitle.demo");
+		pageSubtitle.textContent = t("login.subtitle.demo");
+		setMode("m3u");
+		titleEl.value = t("login.demo.title");
+		m3uEl.value = DEMO_M3U_URL;
+		showStatus("info", t("login.status.demoPrefilled"));
+	} else {
+		setMode("xtream");
+	}
+</script>

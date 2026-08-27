@@ -1,0 +1,47 @@
+---
+layout: ../layouts/DocsLayout.astro
+title: "Subtitles"
+description: "Play movies and series with the subtitles embedded in the file, right from the built-in player."
+lede: "Movies and series episodes can carry subtitle tracks inside the video file itself. They're always off until you turn them on."
+---
+
+import Callout from "../components/Callout.astro"
+
+## Turning subtitles on
+
+Open the subtitle button in the player:
+
+- **ArtPlayer (the default) and Video.js** - a captions (CC) button sits right in the control bar.
+- **Shaka player** - subtitles live in the overflow menu.
+
+Pick a language to turn subtitles on, or pick **Off** to hide them again. Languages are shown in your app's language, and variants like hearing-impaired tracks appear with a note, for example "English (SDH)".
+
+Want subtitles on without picking a language every time? Turn on **Captions on by default** in **Settings > Watching > Playback**. It switches subtitles on automatically whenever a movie or episode has them, preferring your app's language - you can still turn them off in the player, and the setting applies to this device only.
+
+## Where it works
+
+| File | Subtitles play on |
+|---|---|
+| MP4 movies and episodes | Every platform - desktop, Android, and web. |
+| MKV movies and episodes | The desktop app (Windows, macOS, Linux). Windows plays MKV natively; macOS, Linux, and any Windows file the built-in player can't demux on its own go through an automatic fix instead - see [Audio formats & silent channels](./audio-formats/) for how that works under the hood. |
+| AVI movies and episodes | Not supported by the built-in player on any platform - open it in an external player instead. |
+
+On Android and the web, the built-in player can't read subtitles out of an MKV file. Open the stream in an external player instead - see [External players](./external-players/).
+
+<Callout type="note">
+  The automatic fix for MKV needs FFmpeg. If it's not available, playback falls back to an external-player prompt instead of a silent or broken player - check **Settings > Watching > Playback** for FFmpeg status.
+</Callout>
+
+## Adjusting subtitle timing
+
+If subtitles run a beat early or late, look for the **Subtitle delay** button next to the player controls on a movie or episode page - it shows up once a subtitle track is on. Nudge the timing earlier or later in 0.1 second steps, or hit **Reset** to go back to zero. From a keyboard, you can nudge without opening the dialog at all - see [Keyboard + D-pad](./keyboard-and-d-pad/).
+
+## What to expect
+
+- The subtitle list appears a few seconds after playback starts - the app has to look inside the file first.
+- Once you pick a track, lines show up within a moment and keep filling in as you watch.
+- Not every file has subtitles. The button only shows up when there's something to pick.
+
+<Callout type="note">
+  Image-based subtitle formats, like the ones Blu-ray discs use, aren't supported - only text-based tracks.
+</Callout>

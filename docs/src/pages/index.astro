@@ -1,0 +1,102 @@
+---
+import DocsLayout from "../layouts/DocsLayout.astro"
+import HubCard from "../components/HubCard.astro"
+import type { IconName } from "../components/Icon.astro"
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "")
+
+const cards: { href: string; title: string; body: string; icon: IconName; featured?: boolean }[] = [
+  {
+    href: `${base}/getting-started/`,
+    title: "Getting started",
+    body: "Install AitvarasTV, sign in, and start your first stream.",
+    icon: "rocket",
+    featured: true,
+  },
+  {
+    href: `${base}/playlists/`,
+    title: "Playlists (Xtream + M3U)",
+    body: "Add Xtream Codes credentials or paste an M3U / M3U8 URL.",
+    icon: "playlist",
+  },
+  {
+    href: `${base}/custom-playlists/`,
+    title: "Custom playlists",
+    body: "Build your own channel list from channels across all your playlists.",
+    icon: "playlist",
+  },
+  {
+    href: `${base}/add-from-website/`,
+    title: "Add from website",
+    body: "Turn a web page that plays a livestream into a playable channel.",
+    icon: "search",
+  },
+  {
+    href: `${base}/catch-up/`,
+    title: "Catch-up TV & replay",
+    body: "Replay programmes from your provider's archive, pause and rewind live TV.",
+    icon: "tv",
+  },
+  {
+    href: `${base}/audio-formats/`,
+    title: "Audio formats & silent channels",
+    body: "Why some channels play with no sound, and how the desktop app fixes it.",
+    icon: "volume",
+  },
+  {
+    href: `${base}/subtitles/`,
+    title: "Subtitles",
+    body: "Play movies and series with the subtitles embedded in the file.",
+    icon: "subtitles",
+  },
+  {
+    href: `${base}/external-players/`,
+    title: "External players",
+    body: "Hand off playback to MPV, VLC, or any installed Android video app.",
+    icon: "external",
+  },
+  {
+    href: `${base}/keyboard-and-d-pad/`,
+    title: "Keyboard + D-pad",
+    body: "Shortcuts for desktop and spatial navigation for TV remotes.",
+    icon: "keyboard",
+  },
+  {
+    href: `${base}/troubleshooting/`,
+    title: "Troubleshooting",
+    body: "Test a stream, fix EPG offsets, recover from a failed login.",
+    icon: "lifebuoy",
+  },
+  {
+    href: `${base}/translations/`,
+    title: "Translations",
+    body: "16 languages ship with the app. Help translate it into yours.",
+    icon: "language",
+  },
+]
+---
+
+<DocsLayout
+  title="AitvarasTV docs"
+  description="Documentation for AitvarasTV, a cross-platform IPTV player for Xtream Codes and M3U playlists."
+  lede="A cross-platform IPTV player for Xtream Codes and M3U / M3U8 playlists. One app on Windows, macOS, Linux, Android, and the web."
+>
+  <p>
+    AitvarasTV ships on the Microsoft Store, Google Play, GitHub Releases (desktop + Android),
+    and as a web build. The same app runs on a phone in portrait, a tablet, a desktop with keyboard + mouse,
+    and a TV with a D-pad remote.
+  </p>
+
+  <div class="my-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    {cards.map((card) => <HubCard {...card} />)}
+  </div>
+
+  <h2 id="quick-links">Quick links</h2>
+  <ul>
+    <li><a href="https://apps.microsoft.com/detail/9NN162Z0WXSR" rel="noopener" target="_blank">Microsoft Store</a></li>
+    <li><a href="https://play.google.com/store/apps/details?id=com.infinitel8p.xtream" rel="noopener" target="_blank">Google Play</a></li>
+    <li><a href="https://github.com/infinitel8p/Extreme-InfiniTV/releases/latest" rel="noopener" target="_blank">Latest release (Windows / macOS / Linux / Android)</a></li>
+    <li><a href="https://github.com/infinitel8p/Extreme-InfiniTV/discussions" rel="noopener" target="_blank">Discussions</a></li>
+    <li><a href="https://github.com/infinitel8p/Extreme-InfiniTV/issues" rel="noopener" target="_blank">Report an issue</a></li>
+  </ul>
+</DocsLayout>

@@ -1,0 +1,26 @@
+{
+  "identifier": "android-capability",
+  "platforms": [
+    "android"
+  ],
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "android-fs:default",
+    "android-fs:allow-open-write-file-stream",
+    "android-fs:allow-write-file",
+    "android-fs:allow-remove-file",
+    "fs:allow-read-text-file",
+    "fs:allow-read-file",
+    "fs:allow-write-text-file",
+    "fs:allow-exists",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        { "path": "$APPDATA/**" },
+        { "path": "$APPLOG/**" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SearchInput from "@/components/SearchInput.astro";
+import SortMenu from "@/components/SortMenu.astro";
+import CategoryPickerDialog from "@/components/CategoryPickerDialog.astro";
+import { IconAdjustmentsHorizontal, IconChevronDown, IconDice5, IconX } from "@tabler/icons-svelte";
+---
+
+<Layout pageTitle="Movies">
+	<main
+		class="w-full max-w-480 mx-auto px-4 md:px-6 lg:px-8 pt-4 lg:pt-6 md:landscape:pt-6 pb-6
+			flex flex-col gap-4 flex-1 min-h-0">
+
+		<header class="route-hero shrink-0">
+			<h1 data-i18n="page.movies.title" class="route-hero__title">Movies</h1>
+			<div class="route-hero__meta">
+				<span><strong id="movie-hero-count">-</strong> <span data-i18n="list.inCatalogue">in catalogue</span></span>
+				<span class="route-hero__meta-divider" aria-hidden="true"></span>
+				<span id="movie-hero-cat" class="truncate min-w-0">All categories</span>
+			</div>
+		</header>
+
+		<!-- Toolbar: category + search -->
+		<section class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center shrink-0">
+			<button
+				id="movie-category-picker-trigger"
+				type="button"
+				aria-haspopup="dialog"
+				aria-controls="movie-category-picker-dialog"
+				class="rounded-xl border border-line bg-surface px-3.5 py-2 min-h-11 text-sm flex items-center gap-2 text-left
+					sm:w-60 lg:w-72 shrink-0
+					hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+				<span data-i18n="list.category" class="text-fg-3 shrink-0">Category</span>
+				<span
+					id="movie-category-picker-label"
+					data-i18n="list.allCategories"
+					class="text-fg truncate flex-1">All categories</span>
+				<IconChevronDown
+					aria-hidden="true"
+					stroke={2}
+					class="size-4 text-fg-3 shrink-0"
+				/>
+			</button>
+
+			<div class="flex-1 sm:basis-64 min-w-56">
+				<SearchInput
+					id="movie-search"
+					label="Search movies"
+					placeholder="Search movies…"
+					labelKey="list.searchMovies"
+					placeholderKey="list.searchMoviesPlaceholder"
+				/>
+			</div>
+
+			<div class="flex gap-2 sm:ml-auto shrink-0">
+				<SortMenu
+					id="movie-sort"
+					label="View"
+					labelKey="list.view"
+					widthClass="flex-1 sm:flex-none sm:w-44"
+					options={[
+						{ value: "default", label: "Default", key: "sort.default" },
+						{ value: "added", label: "Recently added", key: "sort.recentlyAdded" },
+						{ value: "rating", label: "Rating", key: "sort.rating" },
+						{ value: "az", label: "A-Z", key: "sort.az" },
+					]}
+					selects={[
+						{ id: "movie-lang", label: "Language", labelKey: "list.langFilter.label" },
+					]}
+					toggles={[
+						{ id: "movie-group-langs", label: "Group languages", key: "list.groupLangs", ariaKey: "list.groupLangs.aria" },
+						{ id: "movie-hide-watched", label: "Hide watched", key: "list.hideWatched", ariaKey: "list.hideWatched.aria" },
+					]}
+				>
+					<IconAdjustmentsHorizontal slot="icon" aria-hidden="true" stroke={2} class="size-4 text-fg-3 shrink-0" />
+				</SortMenu>
+
+				<button
+					id="movie-surprise"
+					type="button"
+					data-i18n-attr="aria-label:surprise.buttonAria;title:surprise.buttonAria"
+					aria-label="Surprise me with a random title"
+					title="Surprise me with a random title"
+					class="rounded-xl border border-line bg-surface min-h-11 text-sm shrink-0
+						flex items-center justify-center w-11 px-0 gap-0 xl:w-auto xl:px-3.5 xl:gap-2
+						hover:bg-surface-2 focus-visible:bg-surface-2 focus-visible:border-accent transition-colors">
+					<IconDice5 aria-hidden="true" stroke={2} class="size-4 text-fg-3 shrink-0" />
+					<span data-i18n="surprise.button" class="hidden xl:inline">Surprise me</span>
+				</button>
+			</div>
+		</section>
+
+		<!-- Active person filter -->
+		<div id="movie-person-filter-row" hidden class="flex items-center gap-2 shrink-0 px-1">
+			<span
+				class="inline-flex items-center gap-1.5 rounded-full border border-accent bg-accent-soft
+					px-3 py-1 min-h-8 text-sm text-fg">
+				<span id="movie-person-filter-label"></span>
+				<button
+					id="movie-person-filter-clear"
+					type="button"
+					data-i18n-attr="aria-label:list.personFilterAria;title:list.personFilterAria"
+					aria-label="Remove person filter"
+					title="Remove person filter"
+					class="rounded-full outline-none hover:text-accent focus-visible:text-accent
+						focus-visible:ring-1 focus-visible:ring-accent -mr-1 p-0.5">
+					<IconX aria-hidden="true" stroke={2} class="size-3.5" />
+				</button>
+			</span>
+		</div>
+
+		<!-- Status row -->
+		<div
+			id="movie-list-status"
+			data-i18n="list.noPlaylistSelected"
+			class="px-1 text-xs text-fg-3 tabular-nums shrink-0">
+			No playlist selected.
+		</div>
+
+		<!-- Poster grid. -->
+		<section
+			id="movie-grid"
+			class="flex-1 min-h-0 overflow-auto custom-scroll
+				grid gap-3 sm:gap-4
+				grid-cols-[repeat(auto-fill,minmax(8rem,1fr))]
+				sm:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))]
+				lg:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))]
+				auto-rows-min content-start
+				p-2 pb-4">
+			<!-- Cards rendered by movies.js -->
+		</section>
+
+		<!-- Categories popover -->
+		<CategoryPickerDialog idPrefix="movie-category-picker" />
+	</main>
+
+	<script>
+		import "@/scripts/movies/movies.ts";
+		import "@/scripts/updater-startup.js";
+	</script>
+</Layout>

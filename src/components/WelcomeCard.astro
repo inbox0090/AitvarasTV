@@ -1,0 +1,102 @@
+---
+import { IconPlus, IconSparkles, IconUpload } from "@tabler/icons-svelte";
+---
+
+<div class="welcome-enter welcome-card rounded-2xl border border-line bg-surface text-center">
+	<p
+		data-i18n="welcome.eyebrow"
+		class="welcome-eyebrow font-sans font-medium uppercase tracking-wider text-fg-3">
+		Welcome
+	</p>
+	<h1
+		id="welcome-heading"
+		data-i18n="welcome.heading"
+		class="welcome-heading font-normal text-accent tracking-[-0.005em] leading-none">
+		Pick something to watch.
+	</h1>
+	<p
+		data-i18n="welcome.sub"
+		class="welcome-sub mx-auto text-fg-2 font-sans tracking-tight leading-relaxed">
+		Connect an IPTV subscription, or paste a playlist URL.
+		Channels, movies, and series will appear here.
+	</p>
+
+	<div class="welcome-actions flex flex-col sm:flex-row gap-2.5 sm:gap-3 sm:justify-center">
+		<a href="/login" class="btn-primary">
+			<IconPlus aria-hidden="true" class="btn-icon" />
+			<span data-i18n="playlist.addCta">Add a playlist</span>
+		</a>
+		<a href="/login?demo=1" class="btn">
+			<IconSparkles aria-hidden="true" class="btn-icon text-accent" />
+			<span data-i18n="playlist.demoCta">Try a demo playlist</span>
+		</a>
+	</div>
+
+	<div class="welcome-restore-row">
+		<button
+			id="welcome-restore-btn"
+			type="button"
+			class="welcome-restore-btn inline-flex items-center gap-1.5
+				py-2 px-2.5 -mx-2.5
+				text-sm text-fg-3 hover:text-fg focus-visible:text-fg
+				underline decoration-line decoration-1 underline-offset-4
+				hover:decoration-fg-2 focus-visible:decoration-fg-2
+				transition-colors outline-none rounded-md
+				focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2
+				disabled:opacity-60 disabled:cursor-not-allowed">
+			<IconUpload aria-hidden="true" class="size-3.5" stroke={2} />
+			<span data-i18n="welcome.restoreCta">Restore from backup</span>
+		</button>
+		<input
+			id="welcome-restore-input"
+			type="file"
+			accept="application/json,text/json,text/plain,.json"
+			hidden
+		/>
+	</div>
+
+	<p
+		data-i18n="welcome.fineprint"
+		class="welcome-fineprint text-fg-3 leading-relaxed">
+		This app does not provide any content. The demo loads a
+		public playlist from iptv-org.
+	</p>
+</div>
+
+<style>
+	.welcome-enter {
+		animation: welcome-enter 500ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+	}
+	@keyframes welcome-enter {
+		from {
+			opacity: 0;
+			transform: translateY(12px);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.welcome-enter { animation: none; }
+	}
+	:global(html[data-perf-mode="on"]) .welcome-enter { animation: none; }
+</style>
+
+<script>
+	import { bindBackupRestore } from "@/scripts/lib/restore-backup.js";
+
+	const btn = document.getElementById(
+		"welcome-restore-btn"
+	) as HTMLButtonElement | null;
+	const fileInput = document.getElementById(
+		"welcome-restore-input"
+	) as HTMLInputElement | null;
+
+	bindBackupRestore(btn, {
+		fileInput,
+		logTag: "welcome:restore",
+		onBusyChange: (busy) => {
+			if (btn) btn.disabled = busy;
+		},
+		onRestored: () => {
+			setTimeout(() => window.location.reload(), 600);
+		},
+	});
+</script>

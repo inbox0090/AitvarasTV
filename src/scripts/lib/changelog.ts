@@ -1,0 +1,150 @@
+// Fetch GitHub Releases for the in-app "What's new" panel and render the
+// release-note bodies. Uses `marked` so embedded HTML in release bodies
+// (centered images, `<details>` blocks, badges, etc.) renders the same way
+// it does on the GitHub release page rather than appearing as raw text.
+//
+// `marked` + `dompurify` together weigh ~80 KB minified+gzipped. They are
+// only ever used by the Settings "What's new" dialog, so they are pulled
+// in lazily via dynamic import the first time renderMarkdown() is called.
+// Until then no page bundle that imports this module pays for them.
+
+import { compareVersions } from "@/scripts/lib/version-compare.js"
+
+const CACHE_KEY = "xt_changelog_cache"
+const CACHE_TTL_MS = 60 * 60 * 1000
+
+export interface ReleaseSummary {
+  name?: string
+  tagName: string
+  publishedAt?: string
+  body?: string
+  htmlUrl?: string
+  prerelease?: boolean
+}
+
+interface CacheShape {
+  fetchedAt: number
+  releases: ReleaseSummary[]
+}
+
+const PER_PAGE = 100
+
+export async function fetchReleases(
+  repoSlug = "infinitel8p/Extreme-InfiniTV"
+): Promise<ReleaseSummary[]> {
+  try {
+    const cached = sessionStorage.getItem(CACHE_KEY)
+    if (cached) {
+      const parsed = JSON.parse(cached) as CacheShape
+      if (
+        parsed.fetchedAt &&
+        Date.now() - parsed.fetchedAt < CACHE_TTL_MS &&
+        Array.isArray(parsed.releases)
+      ) {
+        return parsed.releases
+      }
+    }
+  } catch {}
+
+  const response = await fetch(
+    `https://api.github.com/repos/${repoSlug}/releases?per_page=${PER_PAGE}`,
+    { headers: { Accept: "application/vnd.github+json" } }
+  )
+  if (!response.ok) throw new Error(`GitHub API ${response.status}`)
+  const raw = (await response.json()) as Array<{
+    name?: string
+    tag_name: string
+    published_at?: string
+    body?: string
+    html_url?: string
+    draft?: boolean
+    prerelease?: boolean
+  }>
+
+  const releases: ReleaseSummary[] = raw
+    .filter((release) => !release.draft)
+    .map((release) => ({
+      name: release.name,
+      tagName: release.tag_name,
+      publishedAt: release.published_at,
+      body: release.body,
+      htmlUrl: release.html_url,
+      prerelease: release.prerelease,
+    }))
+
+  // GitHub's releases API occasionally returns a stuck release out of order.
+  releases.sort((a, b) => compareVersions(b.tagName, a.tagName))
+
+  try {
+    sessionStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify({ fetchedAt: Date.now(), releases } satisfies CacheShape)
+    )
+  } catch {}
+
+  return releases
+}
+
+// Hides prerelease notes from users on stable, unless they're already running one.
+export function filterReleasesForDisplay(
+  releases: ReleaseSummary[],
+  currentVersion: string
+): ReleaseSummary[] {
+  if (currentVersion.includes("-")) return releases
+  return releases.filter((release) => !release.prerelease)
+}
+
+const ALLOWED_TAGS = [
+  "a", "abbr", "b", "blockquote", "br", "code", "del", "details", "div",
+  "em", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "ins", "kbd",
+  "li", "ol", "p", "pre", "s", "samp", "span", "strong", "sub", "summary",
+  "sup", "table", "tbody", "td", "tfoot", "th", "thead", "tr", "ul",
+]
+const ALLOWED_ATTR = [
+  "align", "alt", "checked", "class", "colspan", "disabled", "height",
+  "href", "id", "lang", "open", "rel", "rowspan", "src", "start", "target",
+  "title", "type", "width",
+]
+
+// Lazy singleton: first call to renderMarkdown() triggers the dynamic
+// imports + one-time configuration; later calls reuse the same modules.
+let markdownPipeline:
+  | Promise<{
+      marked: typeof import("marked").marked
+      DOMPurify: typeof import("dompurify").default
+    }>
+  | null = null
+
+function loadMarkdownPipeline() {
+  if (markdownPipeline) return markdownPipeline
+  markdownPipeline = Promise.all([
+    import("marked"),
+    import("dompurify"),
+  ]).then(([markedMod, purifyMod]) => {
+    const marked = markedMod.marked
+    const DOMPurify = purifyMod.default
+    marked.setOptions({ gfm: true, breaks: false })
+    DOMPurify.addHook("afterSanitizeAttributes", (node) => {
+      if (
+        node instanceof Element &&
+        node.tagName === "A" &&
+        node.getAttribute("target") === "_blank"
+      ) {
+        node.setAttribute("rel", "noopener noreferrer")
+      }
+    })
+    return { marked, DOMPurify }
+  })
+  return markdownPipeline
+}
+
+export async function renderMarkdown(source: string): Promise<string> {
+  if (!source) return ""
+  const { marked, DOMPurify } = await loadMarkdownPipeline()
+  const rendered = marked.parse(source, { async: false }) as string
+  return DOMPurify.sanitize(rendered, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+    ALLOW_DATA_ATTR: false,
+  })
+}
