@@ -7,6 +7,7 @@ import {
   IconDeviceTv,
   IconDownload,
   IconHome,
+  IconLayoutDashboard,
   IconLayoutGrid,
   IconMovie,
   IconPlus,
@@ -112,6 +113,10 @@ const settingsActive = path === "/settings" || path.startsWith("/settings/")
 
     <div class="account-menu__section account-menu__section--preferences">
       <p class="account-menu__section-label">Preferences</p>
+      <a href="/admin" data-admin-dashboard-link hidden class="account-menu__link account-menu__link--admin">
+        <span class="account-menu__link-icon"><IconLayoutDashboard aria-hidden="true" stroke={1.8} /></span>
+        <span>Admin dashboard</span>
+      </a>
       <a href="/account" class="account-menu__link account-menu__link--account">
         <span class="account-menu__link-icon"><IconUserCircle aria-hidden="true" stroke={1.75} /></span>
         <span>Account settings</span>
@@ -233,12 +238,15 @@ const settingsActive = path === "/settings" || path.startsWith("/settings/")
   const authUserLabel = document.querySelector("[data-auth-user-label]")
   const authPlanLabel = document.querySelector("[data-auth-plan-label]")
   const signout = document.querySelector("[data-client-signout]")
+  const adminDashboardLink = document.querySelector("[data-admin-dashboard-link]")
   loadViewerAccess().then((access) => {
     if (access.role === "admin") {
       if (authUserLabel) authUserLabel.textContent = "Admin preview"
       if (authPlanLabel) authPlanLabel.textContent = "Full channel access"
+      adminDashboardLink?.removeAttribute("hidden")
       return
     }
+    adminDashboardLink?.setAttribute("hidden", "")
     if (access.role !== "client") return
     if (authUserLabel) authUserLabel.textContent = access.user?.displayName || access.user?.email || "Member"
     if (authPlanLabel) authPlanLabel.textContent = access.plan?.name ? `Plan: ${access.plan.name}` : "Choose a plan"
