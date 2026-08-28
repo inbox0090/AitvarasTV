@@ -29,26 +29,26 @@ import { IconDeviceTv, IconChevronDown, IconCalendarTime, IconLayoutGrid } from 
 	<main
 		id="livetv-page-main"
 		class="w-full max-w-480 mx-auto px-4 md:px-6 lg:px-8 pt-4 lg:pt-6 md:landscape:pt-6 pb-6
-			flex flex-col gap-4 flex-1 min-h-0">
+				flex flex-col gap-4">
 
 		<section
 			id="livetv-welcome"
 			aria-labelledby="welcome-heading"
-			class="livetv-welcome hidden flex-1 min-h-0 items-center justify-center py-6">
+			class="livetv-welcome hidden items-center justify-center py-6">
 			<WelcomeCard />
 		</section>
 
 		<section
 			id="livetv-main"
-			class="flex flex-col md:landscape:flex-row lg:flex-row gap-4 flex-1 min-h-0">
+			class="flex flex-col md:landscape:flex-row lg:flex-row gap-4">
 
 			<!-- Channels (bottom on mobile, left column on desktop) -->
 			<aside
 				class="order-2 md:landscape:order-1 lg:order-1
 					md:landscape:w-(--xt-channels-w,24rem) lg:w-(--xt-channels-w,28rem)
-					md:landscape:shrink-0 lg:shrink-0 md:landscape:min-h-0 lg:min-h-0">
+					md:landscape:shrink-0 lg:shrink-0">
 				<div
-					class="rounded-2xl border border-line bg-surface p-3 h-full flex flex-col gap-3 md:landscape:min-h-0 lg:min-h-0">
+					class="rounded-2xl border border-line bg-surface p-3 flex flex-col gap-3">
 
 					<div class="flex gap-2 shrink-0">
 						<button
@@ -133,7 +133,7 @@ import { IconDeviceTv, IconChevronDown, IconCalendarTime, IconLayoutGrid } from 
 					<div
 						id="list"
 						class="relative flex-1 min-h-0 overflow-auto pr-1 custom-scroll
-							max-h-96 md:landscape:max-h-dvh lg:max-h-dvh">
+							max-h-96 lg:max-h-[42rem]">
 						<div id="spacer"></div>
 						<div id="viewport" class="absolute inset-x-0 top-0"></div>
 					</div>
@@ -150,9 +150,9 @@ import { IconDeviceTv, IconChevronDown, IconCalendarTime, IconLayoutGrid } from 
 			<!-- Player + EPG (top on mobile, right column on desktop/landscape) -->
 			<section
 				class="order-1 md:landscape:order-2 lg:order-2
-					md:landscape:flex-1 lg:flex-1 min-w-0 md:landscape:min-h-0 lg:min-h-0">
+					min-w-0">
 				<div
-					class="rounded-2xl border border-line bg-surface p-3 h-full flex flex-col gap-3 md:landscape:min-h-0 lg:min-h-0">
+					class="rounded-2xl border border-line bg-surface p-3 flex flex-col gap-3">
 					<div
 						id="player-wrap"
 						class="player-wrap aspect-video w-full mx-auto overflow-hidden rounded-xl bg-black ring-1 ring-line flex items-center justify-center shrink-0 relative">
@@ -248,7 +248,7 @@ import { IconDeviceTv, IconChevronDown, IconCalendarTime, IconLayoutGrid } from 
 					<div
 						id="epg"
 						data-epg-collapsed="true"
-						class="border-t border-line overflow-auto custom-scroll md:landscape:flex-1 md:landscape:min-h-0 lg:flex-1 lg:min-h-0">
+						class="border-t border-line overflow-auto custom-scroll">
 						<div class="flex items-center justify-between gap-2 text-sm font-medium text-fg sticky top-0 bg-surface pt-3 pb-2 z-10">
 							<span data-i18n="livetv.epgPanelHeading" class="ps-1">EPG</span>
 							<div class="flex items-center gap-1 pe-1">
