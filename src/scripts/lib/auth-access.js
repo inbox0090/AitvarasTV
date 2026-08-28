@@ -34,8 +34,13 @@ const planTokens = (plan) => [
 
 export function channelAllowed(channel, access) {
   if (access?.role === "admin" || access?.allChannels === true) return true
+  // Guests must be able to see the catalogue so the global guest-preview
+  // controller can allow a timed preview and stop playback after the policy
+  // duration. Subscription gating applies to authenticated clients; admins
+  // continue to bypass it above.
+  if (!access?.authenticated || access?.role === "guest") return true
   const plan = access?.plan
-  if (!access?.authenticated || !plan) return false
+  if (!plan) return false
   const allowed = planTokens(plan)
   // "General" is the safe seeded catch-all until an administrator maps a plan
   // to a concrete XUI category or bouquet ID.
