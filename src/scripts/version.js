@@ -9,17 +9,27 @@ export async function injectVersion() {
     const badge = document.getElementById('app-version')
     if (!badge) return
 
-    try {
-        const version = await getVersion()
-        const name = await getName()
-        badge.textContent = `${name} v${version}`
-    } catch (e) {
-        log.error('Could not get app version:', e)
-        const tag = document
-            .querySelector('meta[name="x-app-version"]')
-            ?.getAttribute('content')
-        if (!tag) return
-        badge.textContent = `AitvarasTV v${tag}`
+    const isTauri =
+        typeof window !== 'undefined' &&
+        (!!window.__TAURI_INTERNALS__ || !!window.__TAURI__)
+    const metaVersion = document
+        .querySelector('meta[name="x-app-version"]')
+        ?.getAttribute('content')
+
+    if (!isTauri) {
+        // The Astro site also runs in a normal browser, where the Tauri app
+        // bridge is intentionally unavailable. Avoid calling getVersion/getName
+        // here; those helpers otherwise try to invoke a missing web bridge.
+        if (metaVersion) badge.textContent = `AitvarasTV v${metaVersion}`
+    } else {
+        try {
+            const version = await getVersion()
+            const name = await getName()
+            badge.textContent = `${name} v${version}`
+        } catch (e) {
+            log.warn('Could not get app version:', e)
+            if (metaVersion) badge.textContent = `AitvarasTV v${metaVersion}`
+        }
     }
 
     try {
