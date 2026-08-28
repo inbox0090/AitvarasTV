@@ -1,0 +1,205 @@
+---
+import Layout from "@/layouts/Layout.astro"
+---
+
+<Layout pageTitle="Account access">
+  <main class="auth-page" data-auth-app>
+    <div class="auth-shell">
+      <section class="auth-showcase" aria-label="AitvarasTV streaming experience">
+        <div class="auth-showcase__glow auth-showcase__glow--one"></div>
+        <div class="auth-showcase__glow auth-showcase__glow--two"></div>
+        <div class="auth-showcase__topline"><span class="auth-showcase__dot"></span><span>AITVARASTV</span><span class="auth-showcase__live">LIVE</span></div>
+        <div class="auth-showcase__copy">
+          <p class="auth-card__eyebrow">YOUR CINEMA, YOUR WAY</p>
+          <h1>Every story.<br /><em>One place.</em></h1>
+          <p>Build your personal streaming space with live channels, movies, series, and a plan made for the way you watch.</p>
+        </div>
+        <div class="auth-showcase__art" aria-hidden="true">
+          <div class="auth-poster auth-poster--back"><span>LIVE<br />CHANNELS</span></div>
+          <div class="auth-poster auth-poster--middle"><span>NEW<br />RELEASES</span></div>
+          <div class="auth-poster auth-poster--front"><span>YOUR<br /><strong>WATCHLIST</strong></span></div>
+          <div class="auth-showcase__play">▶</div>
+        </div>
+        <div class="auth-benefits">
+          <div><strong>01</strong><span>Choose a plan<br /><small>Match your channels</small></span></div>
+          <div><strong>02</strong><span>Connect your library<br /><small>Keep your playlists yours</small></span></div>
+          <div><strong>03</strong><span>Start watching<br /><small>Every screen, one account</small></span></div>
+        </div>
+      </section>
+
+      <section class="auth-card" aria-labelledby="auth-title">
+        <div class="auth-card__brand"><span class="auth-card__mark">∞</span><span>AitvarasTV</span></div>
+        <p class="auth-card__eyebrow" data-auth-eyebrow>MEMBERS AREA</p>
+        <h2 id="auth-title" data-auth-title>Sign in to continue.</h2>
+        <p class="auth-card__intro" data-auth-intro>Use your platform account to access your playlists, channels, movies, and settings.</p>
+
+        <div class="auth-tabs" role="tablist" aria-label="Account access mode">
+          <button type="button" class="auth-tab is-active" data-auth-mode="login" role="tab" aria-selected="true">Sign in</button>
+          <button type="button" class="auth-tab" data-auth-mode="register" role="tab" aria-selected="false">Create account</button>
+        </div>
+
+        <form class="auth-form" data-auth-form novalidate>
+          <label data-register-only hidden><span>Display name</span><input name="displayName" type="text" autocomplete="name" maxlength="80" placeholder="Your name"></label>
+          <label><span>Email address</span><input name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+          <label><span>Password</span><input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></label>
+          <label data-register-only hidden><span>Repeat password</span><input name="password2" type="password" autocomplete="new-password" minlength="8" placeholder="Repeat password"></label>
+
+          <section class="auth-plan-picker" data-plan-picker hidden aria-labelledby="auth-plans-title">
+            <div class="auth-plan-picker__head">
+              <div>
+                <p class="auth-card__eyebrow">ACCESS LEVEL</p>
+                <h3 id="auth-plans-title">Choose your channel plan.</h3>
+              </div>
+              <span class="auth-plan-picker__required">Required</span>
+            </div>
+            <p class="auth-plan-picker__hint">Your plan controls which playlist categories are visible.</p>
+            <div class="auth-plan-grid" data-plan-grid aria-live="polite"></div>
+          </section>
+
+          <input type="hidden" name="planSlug" data-plan-input>
+          <button class="auth-submit" type="submit" data-auth-submit><span>Sign in</span><b>↗</b></button>
+          <p class="auth-status" data-auth-status role="status" aria-live="polite"></p>
+        </form>
+
+        <p class="auth-card__footer"><a href="/">Back to home</a><span>·</span><a href="/admin/login">Admin access</a></p>
+        <p class="auth-card__secure"><span>⌁</span> Secure account access · Your data stays private</p>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const root = document.querySelector("[data-auth-app]")
+  const form = root?.querySelector("[data-auth-form]")
+  const status = root?.querySelector("[data-auth-status]")
+  const modeButtons = Array.from(root?.querySelectorAll("[data-auth-mode]") || [])
+  const registerFields = Array.from(root?.querySelectorAll("[data-register-only]") || [])
+  const planPicker = root?.querySelector("[data-plan-picker]")
+  const planGrid = root?.querySelector("[data-plan-grid]")
+  const planInput = root?.querySelector("[data-plan-input]")
+  const submit = root?.querySelector("[data-auth-submit]")
+  const submitLabel = submit?.querySelector("span")
+  const title = root?.querySelector("[data-auth-title]")
+  const intro = root?.querySelector("[data-auth-intro]")
+  const eyebrow = root?.querySelector("[data-auth-eyebrow]")
+  const params = new URLSearchParams(window.location.search)
+  const nextPath = params.get("next") || "/"
+  let mode = params.get("mode") === "register" || params.get("choose") === "1" ? "register" : "login"
+  let plans = []
+  let selectedPlan = params.get("plan") || ""
+  try {
+    const nextUrl = new URL(nextPath, window.location.origin)
+    selectedPlan ||= nextUrl.searchParams.get("plan") || ""
+  } catch {}
+
+  const setStatus = (message, kind = "") => {
+    if (!status) return
+    status.textContent = message
+    status.dataset.kind = kind
+  }
+
+  const priceLabel = (plan) => {
+    const price = Number(plan.price)
+    if (!Number.isFinite(price) || price <= 0) return "Provider pricing"
+    try { return new Intl.NumberFormat(undefined, { style: "currency", currency: plan.currency || "EUR" }).format(price) } catch { return `${price.toFixed(2)} ${plan.currency || "EUR"}` }
+  }
+
+  const renderPlans = () => {
+    if (!planGrid) return
+    planGrid.replaceChildren(...plans.map((plan) => {
+      const button = document.createElement("button")
+      button.type = "button"
+      button.className = "auth-plan-choice"
+      button.dataset.planSlug = plan.slug
+      button.setAttribute("aria-pressed", String(plan.slug === selectedPlan))
+      if (plan.slug === selectedPlan) button.classList.add("is-selected")
+      const name = document.createElement("strong")
+      name.textContent = plan.name
+      const meta = document.createElement("span")
+      meta.textContent = `${priceLabel(plan)} · ${plan.category || "General"} · ${plan.maxConnections || 1} connection${Number(plan.maxConnections) === 1 ? "" : "s"}`
+      const description = document.createElement("small")
+      description.textContent = plan.description || "Choose this channel access plan."
+      button.append(name, meta, description)
+      button.addEventListener("click", () => {
+        selectedPlan = plan.slug
+        if (planInput) planInput.value = selectedPlan
+        renderPlans()
+        setStatus(`${plan.name} selected.`, "success")
+      })
+      return button
+    }))
+  }
+
+  const loadPlans = async () => {
+    try {
+      const response = await fetch("/api/plans", { headers: { Accept: "application/json" } })
+      const payload = await response.json()
+      plans = Array.isArray(payload?.plans) ? payload.plans : []
+      if (!selectedPlan && plans.length === 1) selectedPlan = plans[0].slug
+      if (planInput) planInput.value = selectedPlan
+      renderPlans()
+    } catch {
+      plans = []
+      if (planGrid) planGrid.textContent = "Plans are temporarily unavailable. Try again in a moment."
+    }
+  }
+
+  const setMode = (nextMode) => {
+    mode = nextMode
+    const register = mode === "register"
+    modeButtons.forEach((button) => {
+      const active = button.dataset.authMode === mode
+      button.classList.toggle("is-active", active)
+      button.setAttribute("aria-selected", String(active))
+    })
+    registerFields.forEach((field) => {
+      field.hidden = !register
+      const input = field.querySelector("input")
+      if (input) input.required = register
+    })
+    if (planPicker) planPicker.hidden = !register
+    if (submitLabel) submitLabel.textContent = register ? "Create account" : "Sign in"
+    if (title) title.textContent = register ? "Choose your access." : "Sign in to continue."
+    if (eyebrow) eyebrow.textContent = register ? "START WATCHING" : "MEMBERS AREA"
+    if (intro) intro.textContent = register ? "Create an account, choose a channel plan, and continue to your personal streaming space." : "Use your platform account to access your playlists, channels, movies, and settings."
+    if (register && !selectedPlan) setStatus("Choose a plan to create your account.")
+    else if (!register) setStatus("")
+    renderPlans()
+  }
+
+  modeButtons.forEach((button) => button.addEventListener("click", () => setMode(button.dataset.authMode || "login")))
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault()
+    if (!form) return
+    const data = new FormData(form)
+    const email = String(data.get("email") || "").trim()
+    const password = String(data.get("password") || "")
+    if (!email || password.length < 8) return setStatus("Enter a valid email and a password with at least 8 characters.", "error")
+    if (mode === "register" && !selectedPlan) return setStatus("Choose a plan before creating your account.", "error")
+    if (mode === "register" && password !== String(data.get("password2") || "")) return setStatus("The passwords do not match.", "error")
+    if (submit) { submit.disabled = true; if (submitLabel) submitLabel.textContent = mode === "register" ? "Creating account…" : "Signing in…" }
+    setStatus("")
+    try {
+      const endpoint = mode === "register" ? "/api/auth/register" : "/api/auth/login"
+      const payload = mode === "register"
+        ? { displayName: data.get("displayName"), email, password, planSlug: selectedPlan }
+        : { email, password }
+      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, credentials: "same-origin", body: JSON.stringify(payload) })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.error || "Unable to authenticate right now.")
+      if (mode === "login" && selectedPlan) {
+        const planResponse = await fetch("/api/auth/select-plan", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, credentials: "same-origin", body: JSON.stringify({ planSlug: selectedPlan }) })
+        const planResult = await planResponse.json().catch(() => ({}))
+        if (!planResponse.ok) throw new Error(planResult.error || "Unable to save the selected plan.")
+      }
+      window.location.assign(nextPath.startsWith("/") ? nextPath : "/")
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable to authenticate right now.", "error")
+    } finally {
+      if (submit) { submit.disabled = false; if (submitLabel) submitLabel.textContent = mode === "register" ? "Create account" : "Sign in" }
+    }
+  })
+
+  setMode(mode)
+  void loadPlans()
+</script>

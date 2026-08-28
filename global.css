@@ -4738,3 +4738,86 @@ body {
     margin-top: 2.75rem;
   }
 }
+
+/*
+ * Content pages use the same natural document flow as Home.
+ * The page itself owns scrolling; catalog grids never become a second viewport
+ * that can hide their final rows behind the footer.
+ */
+.app-content-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  min-height: auto !important;
+  overflow: visible !important;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+.app-content-shell > main {
+  flex: 0 0 auto;
+  min-height: auto !important;
+  overflow: visible !important;
+}
+.app-content-shell > main.movie-first-home {
+  flex: 1 0 auto;
+}
+#movie-grid,
+#series-grid {
+  flex: none !important;
+  min-height: 14rem;
+  overflow: visible !important;
+  padding-bottom: 1rem;
+}
+#livetv-page-main,
+#livetv-main,
+#livetv-main > aside,
+#livetv-main > section {
+  flex: none !important;
+  min-height: auto !important;
+  overflow: visible !important;
+}
+#livetv-page-main #list {
+  flex: 0 1 auto !important;
+  min-height: 16rem;
+  height: clamp(16rem, 50dvh, 42rem);
+  max-height: 42rem;
+}
+#livetv-page-main #epg {
+  min-height: 8rem;
+  overflow: visible !important;
+}
+.cinema-footer {
+  position: static !important;
+  clear: both;
+  margin-top: clamp(3rem, 8vw, 6rem);
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+@media (max-width: 39.999rem) {
+  #movie-grid,
+  #series-grid {
+    min-height: 10rem;
+  }
+  #livetv-page-main #list {
+    min-height: 13rem;
+    height: 21rem;
+  }
+  .cinema-footer {
+    margin-top: 3rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinema-footer,
+  .app-content-shell > main {
+    scroll-behavior: auto;
+  }
+}
+
+/* Admin shortcut is rendered only after the authenticated role is verified. */
+.account-menu__link--admin {
+  border-color: color-mix(in oklch, var(--color-accent) 34%, var(--color-line));
+  background: color-mix(in oklch, var(--color-accent-soft) 52%, transparent);
+}
+.account-menu__link--admin:hover,
+.account-menu__link--admin:focus-visible {
+  border-color: var(--color-accent);
+}
