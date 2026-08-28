@@ -4702,3 +4702,122 @@ select {
 
 /* Billing analytics table. */
 .billing-panel{max-width:1100px}.billing-table-wrap{overflow-x:auto;margin-top:1rem}.billing-table{width:100%;border-collapse:collapse;min-width:620px}.billing-table th,.billing-table td{padding:.85rem .7rem;border-bottom:1px solid var(--line);text-align:left;color:var(--muted);font-size:13px}.billing-table th{color:var(--fg);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.billing-table td strong{display:block;color:var(--fg)}.billing-table td small{display:block;margin-top:2px;color:var(--muted);font-size:11px}
+
+
+/* Natural document flow for content pages.
+   Keep the footer below the page content instead of allowing nested viewport
+   scrolling or a fixed-height shell to cover the last rows and controls. */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  height: auto !important;
+  min-height: 100dvh;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.app-content-shell {
+  min-height: auto !important;
+  flex: 1 0 auto;
+  overflow: visible !important;
+  overflow-x: clip !important;
+  overscroll-behavior-y: auto;
+}
+
+.app-content-shell > .cinema-footer {
+  position: static !important;
+  flex: 0 0 auto;
+  margin-top: clamp(2.75rem, 7vw, 6rem);
+}
+
+@media (max-width: 39.999rem) {
+  .app-content-shell > .cinema-footer {
+    margin-top: 2.75rem;
+  }
+}
+
+/*
+ * Content pages use the same natural document flow as Home.
+ * The page itself owns scrolling; catalog grids never become a second viewport
+ * that can hide their final rows behind the footer.
+ */
+.app-content-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  min-height: auto !important;
+  overflow: visible !important;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+.app-content-shell > main {
+  flex: 0 0 auto;
+  min-height: auto !important;
+  overflow: visible !important;
+}
+.app-content-shell > main.movie-first-home {
+  flex: 1 0 auto;
+}
+#movie-grid,
+#series-grid {
+  flex: none !important;
+  min-height: 14rem;
+  overflow: visible !important;
+  padding-bottom: 1rem;
+}
+#livetv-page-main,
+#livetv-main,
+#livetv-main > aside,
+#livetv-main > section {
+  flex: none !important;
+  min-height: auto !important;
+  overflow: visible !important;
+}
+#livetv-page-main #list {
+  flex: 0 1 auto !important;
+  min-height: 16rem;
+  height: clamp(16rem, 50dvh, 42rem);
+  max-height: 42rem;
+}
+#livetv-page-main #epg {
+  min-height: 8rem;
+  overflow: visible !important;
+}
+.cinema-footer {
+  position: static !important;
+  clear: both;
+  margin-top: clamp(3rem, 8vw, 6rem);
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+@media (max-width: 39.999rem) {
+  #movie-grid,
+  #series-grid {
+    min-height: 10rem;
+  }
+  #livetv-page-main #list {
+    min-height: 13rem;
+    height: 21rem;
+  }
+  .cinema-footer {
+    margin-top: 3rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cinema-footer,
+  .app-content-shell > main {
+    scroll-behavior: auto;
+  }
+}
+
+/* Admin shortcut is rendered only after the authenticated role is verified. */
+.account-menu__link--admin {
+  border-color: color-mix(in oklch, var(--color-accent) 34%, var(--color-line));
+  background: color-mix(in oklch, var(--color-accent-soft) 52%, transparent);
+}
+.account-menu__link--admin:hover,
+.account-menu__link--admin:focus-visible {
+  border-color: var(--color-accent);
+}
